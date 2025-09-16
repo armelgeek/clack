@@ -196,3 +196,11 @@ This project is licensed under the MIT License.
 
 - [NestJS](https://nestjs.com/) - Progressive Node.js framework
 - [Drizzle ORM](https://orm.drizzle.team/) - TypeScript ORM for SQL databases
+
+
+## Configure OAuth
+   - Google : https://www.youtube.com/watch?v=ot9yuKg15iA&t=138s
+   - Facebook: 
+         - https://www.youtube.com/watch?v=dGB4LKK4I2c
+   -X : 
+         - https://www.youtube.com/watch?v=Ns9xH-5v3Po

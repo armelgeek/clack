@@ -11,6 +11,22 @@ export const auth = betterAuth({
         provider: 'pg',
         schema
     }),
+    socialProviders: {
+        google: {
+            prompt: "select_account consent", 
+            clientId: process.env.GOOGLE_CLIENT_ID as string || '326800995087-vot6bqn575otd9k5ph5d99jq602he1vc.apps.googleusercontent.com',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string || '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',
+            accessType: "offline", 
+        },
+        facebook: {
+            clientId: process.env.FACEBOOK_CLIENT_ID as string || '1525766995338175',
+            clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string || '1e588e7376dea912817869780c664081',
+        },
+        twitter: { 
+            clientId: process.env.TWITTER_CLIENT_ID as string  || 'VUpGbXJNY2ZkeUtiQ1VqSlhaOUE6MTpjaQ', 
+            clientSecret: process.env.TWITTER_CLIENT_SECRET as string  || 'D_PSAsUXaAgRy-nGhYAvkfSkf495jA_q8MPczWvuo3uP7Sp42Z', 
+        }
+    },
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
     trustedOrigins:
         process.env.NODE_ENV === 'production'

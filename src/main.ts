@@ -14,26 +14,38 @@ async function bootstrap() {
   });
 
   app.use('/api/auth/*', async (req: any, res: Response) => {
+    
+    const allowedOrigin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || 'Content-Type,Authorization');
+
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+
     try {
       const protocol = req.protocol || 'http';
       const host = req.get('host') || 'localhost:3000';
       const fullUrl = `${protocol}://${host}${req.originalUrl}`;
-      
-        let rawBody = undefined;
-        if (req.method !== 'GET' && req.method !== 'HEAD') {
-          rawBody = await new Promise((resolve, reject) => {
-            let data = [];
-            req.on('data', chunk => data.push(chunk));
-            req.on('end', () => resolve(Buffer.concat(data)));
-            req.on('error', reject);
-          });
-        }
 
-        const request = new Request(fullUrl, {
-          method: req.method,
-          headers: req.headers,
-          body: rawBody,
+      let rawBody = undefined;
+      if (req.method !== 'GET' && req.method !== 'HEAD') {
+        rawBody = await new Promise((resolve, reject) => {
+          let data = [];
+          req.on('data', chunk => data.push(chunk));
+          req.on('end', () => resolve(Buffer.concat(data)));
+          req.on('error', reject);
         });
+      }
+
+      const request = new Request(fullUrl, {
+        method: req.method,
+        headers: req.headers,
+        body: rawBody,
+      });
 
       const response = await auth.handler(request);
 
