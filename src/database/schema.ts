@@ -1,4 +1,12 @@
-import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  json,
+  numeric,
+  pgTable,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -12,6 +20,30 @@ export const users = pgTable('users', {
   banExpires: timestamp('ban_expires'),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
+});
+
+export const stores = pgTable('stores', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  logoUrl: text('logo_url'),
+  address: text('address').notNull(),
+  latitude: numeric('latitude'),
+  longitude: numeric('longitude'),
+  phoneNumber: varchar('phone_number', { length: 20 }),
+  openingHours: json('opening_hours'), // JSON depuis Google Maps
+  status: text('status').default('ACTIVATED').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+});
+
+export const storeUsers = pgTable('store_users', {
+  storeId: text('store_id')
+    .notNull()
+    .references(() => stores.id),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id),
 });
 
 export const sessions = pgTable('sessions', {
