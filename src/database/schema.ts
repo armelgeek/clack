@@ -21,6 +21,7 @@ export const users = pgTable('users', {
   banExpires: timestamp('ban_expires'),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
 });
 
 export const stores = pgTable('stores', {
@@ -88,6 +89,16 @@ export const verifications = pgTable('verifications', {
   updatedAt: timestamp('updated_at'),
 });
 
+
+export const twoFactor = pgTable("two_factor", {
+  id: text("id").primaryKey(),
+  secret: text("secret").notNull(),
+  backupCodes: text("backup_codes").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+});
+
 // Relations
 export const storeUsersRelations = relations(storeUsers, ({ one }) => ({
   store: one(stores, {
@@ -107,6 +118,7 @@ export const storesRelations = relations(stores, ({ many }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
   storeUsers: many(storeUsers),
 }));
+
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
