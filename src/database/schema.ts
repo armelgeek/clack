@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   boolean,
   json,
@@ -86,6 +87,26 @@ export const verifications = pgTable('verifications', {
   createdAt: timestamp('created_at'),
   updatedAt: timestamp('updated_at'),
 });
+
+// Relations
+export const storeUsersRelations = relations(storeUsers, ({ one }) => ({
+  store: one(stores, {
+    fields: [storeUsers.storeId],
+    references: [stores.id],
+  }),
+  user: one(users, {
+    fields: [storeUsers.userId],
+    references: [users.id],
+  }),
+}));
+
+export const storesRelations = relations(stores, ({ many }) => ({
+  storeUsers: many(storeUsers),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  storeUsers: many(storeUsers),
+}));
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

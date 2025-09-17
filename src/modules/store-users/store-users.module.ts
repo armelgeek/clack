@@ -5,7 +5,6 @@ import { StoreModule } from '../store/store.module';
 import { StoreUsersController } from './store-users.controller';
 
 @Module({
-  imports: [StoreModule],
   controllers: [StoreUsersController],
   providers: [StoreUsersService, StoreUsersRepository],
   exports: [StoreUsersService],
