@@ -3,10 +3,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './modules/app.module';
 const cookieParser = require('cookie-parser');
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { auth } from './modules/auth/auth.service';
-import { scalarPage } from './common/templates/scalar';
-import { homePage } from './common/templates/home';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -98,18 +96,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
-  app.use('/api-json', (req: Request, res: Response) => {
-    res.json(document);
-  });
-
-  app.use('/docs', (req: Request, res: Response) => {
-    res.send(`${scalarPage}`);
-  });
-
-  app.use('/', async (req: Request, res: Response) => {
-    res.send(`${homePage}`);
-  });
+  SwaggerModule.setup('docs', app, document);
 
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
   await app.listen(port);
