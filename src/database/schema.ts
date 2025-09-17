@@ -12,6 +12,7 @@ export const users = pgTable('users', {
   banExpires: timestamp('ban_expires'),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
 });
 
 export const sessions = pgTable('sessions', {
@@ -53,6 +54,15 @@ export const verifications = pgTable('verifications', {
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at'),
   updatedAt: timestamp('updated_at'),
+});
+
+export const twoFactor = pgTable("two_factor", {
+  id: text("id").primaryKey(),
+  secret: text("secret").notNull(),
+  backupCodes: text("backup_codes").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
 });
 
 export type User = typeof users.$inferSelect;
