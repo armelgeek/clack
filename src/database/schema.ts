@@ -1,5 +1,4 @@
-import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
-
+import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -12,8 +11,8 @@ export const users = pgTable('users', {
   banReason: text('ban_reason'),
   banExpires: timestamp('ban_expires'),
   createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull()
-})
+  updatedAt: timestamp('updated_at').notNull(),
+});
 
 export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
@@ -26,8 +25,8 @@ export const sessions = pgTable('sessions', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id),
-  impersonatedBy: text('impersonated_by').references(() => users.id)
-})
+  impersonatedBy: text('impersonated_by').references(() => users.id),
+});
 
 export const accounts = pgTable('accounts', {
   id: text('id').primaryKey(),
@@ -44,8 +43,8 @@ export const accounts = pgTable('accounts', {
   scope: text('scope'),
   password: text('password'),
   createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull()
-})
+  updatedAt: timestamp('updated_at').notNull(),
+});
 
 export const verifications = pgTable('verifications', {
   id: text('id').primaryKey(),
@@ -53,8 +52,8 @@ export const verifications = pgTable('verifications', {
   value: text('value').notNull(),
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at'),
-  updatedAt: timestamp('updated_at')
-})
+  updatedAt: timestamp('updated_at'),
+});
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
