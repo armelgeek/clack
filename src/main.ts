@@ -14,12 +14,18 @@ async function bootstrap() {
   });
 
   app.use('/api/auth/*', async (req: any, res: Response) => {
-    
     const allowedOrigin = req.headers.origin || '*';
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || 'Content-Type,Authorization');
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET,POST,PUT,DELETE,OPTIONS',
+    );
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      req.headers['access-control-request-headers'] ||
+        'Content-Type,Authorization',
+    );
 
     if (req.method === 'OPTIONS') {
       res.status(204).end();
@@ -35,7 +41,7 @@ async function bootstrap() {
       if (req.method !== 'GET' && req.method !== 'HEAD') {
         rawBody = await new Promise((resolve, reject) => {
           let data = [];
-          req.on('data', chunk => data.push(chunk));
+          req.on('data', (chunk) => data.push(chunk));
           req.on('end', () => resolve(Buffer.concat(data)));
           req.on('error', reject);
         });
@@ -110,7 +116,9 @@ async function bootstrap() {
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`📚 Standard Swagger UI: http://localhost:${port}/docs`);
-  console.log(`🔐 Better Auth Docs: http://localhost:${port}/api/auth/reference`);
+  console.log(
+    `🔐 Better Auth Docs: http://localhost:${port}/api/auth/reference`,
+  );
 }
 
 bootstrap();
