@@ -60,7 +60,7 @@ scan-trivy:
 
         pwd
         echo $IMAGE_NAME > image_back.txt
-        bash ./scan_trivy_jq_backend.sh.sh < /dev/null
+        bash ./scan_trivy_jq_backend.sh < /dev/null
 
         pwd
         cat valeur.txt
