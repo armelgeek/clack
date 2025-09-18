@@ -62,7 +62,7 @@ scan-trivy:
         echo $IMAGE_NAME > image_back.txt
         bash ./scan_trivy_jq_backend.sh < /dev/null
 
-        pwd
+        pwd 
         cat valeur_mobile-backend.txt
 
         echo "debut de condition"
