@@ -39,6 +39,24 @@ export const stores = pgTable('stores', {
   deletedAt: timestamp('deleted_at'),
 });
 
+export const products = pgTable('products', { 
+  id: text('id').primaryKey(),
+  storeId: text('store_id')
+    .notNull()
+    .references(() => stores.id),
+  name: text('name').notNull(),
+  category: text('category').notNull(),
+  image: text('image'),
+  priceHT: numeric('price_ht').notNull(),
+  priceTTC: numeric('price_ttc').notNull(),
+  vat: numeric('vat').notNull(),
+  status: text('status').notNull().default('ACTIVATED'), // or use enum if supported
+  quantity: numeric('quantity').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+});
+
 export const storeUsers = pgTable('store_users', {
   storeId: text('store_id')
     .notNull()
@@ -111,8 +129,16 @@ export const storeUsersRelations = relations(storeUsers, ({ one }) => ({
   }),
 }));
 
+export const productsRelations = relations(products, ({ one }) => ({
+  store: one(stores, {
+    fields: [products.storeId],
+    references: [stores.id],
+  }),
+}));
+
 export const storesRelations = relations(stores, ({ many }) => ({
   storeUsers: many(storeUsers),
+  products: many(products),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
