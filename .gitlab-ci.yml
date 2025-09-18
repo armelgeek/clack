@@ -2,7 +2,7 @@ stages:
   - build
   - scan
   - deploy
-
+ 
 variables: 
   DOCKER_TLS_CERTDIR: ''
   IMAGE_TAG: $CI_COMMIT_SHORT_SHA
