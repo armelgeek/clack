@@ -63,7 +63,7 @@ scan-trivy:
         bash ./scan_trivy_jq_backend.sh < /dev/null
 
         pwd
-        cat valeur.txt
+        cat valeur_mobile-backend.txt
 
         echo "debut de condition"
         nombre_vulnerable=\$(tr -cd '0-9' < valeur.txt)
