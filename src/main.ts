@@ -53,12 +53,22 @@ async function bootstrap() {
 
       const response = await auth.handler(request);
 
+      // Forward cookies from Better Auth to the client
+      const setCookie = response.headers.get('set-cookie');
+      if (setCookie) {
+        setCookie
+          .split(',')
+          .forEach((c: string) => res.append('Set-Cookie', c));
+      }
+
       response.headers.forEach((value, key) => {
-        res.setHeader(key, value);
+        if (key.toLowerCase() !== 'set-cookie') {
+
+          res.setHeader(key, value);
+        }
       });
 
       res.status(response.status);
-
       if (response.body) {
         const body = await response.text();
         res.send(body);
