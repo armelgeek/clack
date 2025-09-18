@@ -59,8 +59,8 @@ scan-trivy:
         rm -rf valeur.txt
 
         pwd
-        echo $IMAGE_NAME > image.txt
-        bash ./scan_trivy_jq.sh < /dev/null
+        echo $IMAGE_NAME > image_back.txt
+        bash ./scan_trivy_jq_backend.sh.sh < /dev/null
 
         pwd
         cat valeur.txt
