@@ -27,8 +27,7 @@ before_script:
 build:
   stage: build
   image: alpine:latest
-  tags:
-    - meko
+
 
   script:
     - |
@@ -48,8 +47,7 @@ build:
 # #####################################################################
 scan-trivy:
   stage: scan
-  tags:
-    - meko
+
 
   script:
     - |
@@ -114,8 +112,7 @@ scan-trivy:
 deploy-k8s:
   stage: deploy
   image: alpine:latest
-  tags:
-    - meko
+
   script:
     - |
       echo " Connecting to remote server to deploy ..."
