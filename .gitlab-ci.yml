@@ -1,7 +1,7 @@
 stages:
   - build
   - scan
-  - deploy
+  - deploy 
  
 variables: 
   DOCKER_TLS_CERTDIR: ''
