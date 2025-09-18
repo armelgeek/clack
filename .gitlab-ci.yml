@@ -36,7 +36,7 @@ build:
         set -e
         cd "$REMOTE_DIR" || exit 1
         echo " Pulling latest changes from repo & building "
-        git pull origin develop && docker build -t "$IMAGE_NAME" .
+        git pull origin dev && docker build -t "$IMAGE_NAME" .
       EOF
   only:
     - develop
@@ -139,4 +139,4 @@ deploy-k8s:
   needs:
     - scan-trivy
   only:
-    - develop
+    - dev
