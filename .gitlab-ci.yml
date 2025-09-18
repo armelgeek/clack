@@ -66,7 +66,7 @@ scan-trivy:
         cat valeur_mobile-backend.txt
 
         echo "debut de condition"
-        nombre_vulnerable=\$(tr -cd '0-9' < valeur.txt)
+        nombre_vulnerable=\$(tr -cd '0-9' < valeur_mobile-backend.txt)
         nombre_vulnerable=\${nombre_vulnerable:-0}
         if [ \$nombre_vulnerable -gt 0 ];then
           echo "⚠️ Vulnerable detected, veuillez consulter dans l'artefact "
