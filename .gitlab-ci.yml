@@ -139,4 +139,4 @@ deploy-k8s:
   needs:
     - scan-trivy
   only:
-    - dev
+    - dev 
