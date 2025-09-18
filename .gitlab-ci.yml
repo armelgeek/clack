@@ -39,7 +39,7 @@ build:
         git pull origin dev && docker build -t "$IMAGE_NAME" .
       EOF
   only:
-    - develop
+    - dev
 
 # #####################################################################
 # test de sécurité
@@ -98,7 +98,7 @@ scan-trivy:
   needs:
     - build
   only:
-    - develop
+    - dev
   artifacts:
     untracked: false
     when: on_success
