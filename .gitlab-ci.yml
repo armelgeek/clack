@@ -19,7 +19,7 @@ before_script:
   - chmod 600 ~/.ssh/ssh_key
   - ssh-keyscan -H $SSH_IP >> ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
-  - echo "SSH connection setup"
+  - echo "SSH connection setup" 
 
 # #####################################################################
 # build
