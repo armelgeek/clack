@@ -1,34 +1,26 @@
-# Dockerfile.dev - pour l'environnement de développement sous Kubernetes
+# Image de base
 FROM node:20-bullseye-slim
-
-# Variables d'env par défaut
-ENV NODE_ENV=development \
-    PORT=3000
 
 # Dossier de travail
 WORKDIR /app
 
-# Installer outils nécessaires pour modules natifs (bcrypt, éventuellement jison)
+# Installer les dependances
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    python3 \
-    git \
+    build-essential python3 git \
   && rm -rf /var/lib/apt/lists/*
 
-# Copier uniquement les fichiers de dépendances en premier (pour profiter du cache Docker)
-COPY package*.json ./
+# Copier les deux dossiers dans le conteneur
+COPY mobile-app-backend/ ./mobile-app-backend/
+COPY vapostore-db/ ./vapostore-db/
 
-# Installer toutes les dépendances (y compris dev pour hot reload, migrations, tests…)
-RUN npm install --force
+# Installer dépendances vapostore-db
+RUN npm install --force --prefix ./vapostore-db
 
-# Copier le reste du code
-COPY . .
-
-# (optionnel) Si tu veux persister sqlite en dev
-RUN mkdir -p /app/data
+# Installer dépendances backend
+RUN npm install --force --prefix ./mobile-app-backend
 
 # Exposer le port
 EXPOSE 3000
 
-# Commande par défaut → lance le mode dev (hot reload avec Nest CLI)
-CMD ["npm", "run", "dev"]
+# Lancer
+CMD ["sh", "-c", "cd mobile-app-backend/ && npm run db:generate && npm run db:push && npm run dev --host 0.0.0.0"]
