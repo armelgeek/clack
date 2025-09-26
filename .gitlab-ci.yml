@@ -26,7 +26,7 @@ before_script:
 # #####################################################################
 build:
   stage: build
-  image: alpine:latest
+  image: alpine:3.18
 
 
   script:
@@ -111,7 +111,7 @@ scan-trivy:
 # #####################################################################
 deploy-k8s:
   stage: deploy
-  image: alpine:latest
+  image: alpine:3.18
 
   script:
     - |
