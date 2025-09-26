@@ -6,7 +6,8 @@ stages:
 variables: 
   DOCKER_TLS_CERTDIR: ''
   IMAGE_TAG: $CI_COMMIT_SHORT_SHA 
-  REMOTE_DIR: $REMOTE_DIR 
+  HOME_DIR: "/home/project"
+  PROJECT_DIR: "/home/project/mobile-app-backend"
   DOCKER_REGISTRY: $REGISTRY_HOST
   IMAGE_NAME: '$IMAGE_NAME:$IMAGE_TAG'
   REMOTE_TRIVY_DIR: $REMOTE_TRIVY_DIR
@@ -34,20 +35,23 @@ build:
       echo " Connecting to remote server to build image ..."
       ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key $SSH_USER@$SSH_IP <<EOF
         set -e
-        cd "$REMOTE_DIR" || exit 1
+        # Pull
+        cd "$PROJECT_DIR" || exit 1
         echo " Pulling latest changes from repo & building "
-        git pull origin dev && docker build -t "$IMAGE_NAME" .
+        git pull origin dev
+        # Build
+        cd "$HOME_DIR"
+        docker build -t "$IMAGE_NAME" -f "$PROJECT_DIR/Dockerfile" .
+        echo "Build ok"
       EOF
   only:
     - dev
 
 # #####################################################################
-# test de sécurité
-# Cette étape est dédiée à l'exécution de tests de sécurité sur le code.
-# #####################################################################
+# test de sécurité sur le code
+#####################################################################
 scan-trivy:
   stage: scan
-
 
   script:
     - |
@@ -119,7 +123,7 @@ deploy-k8s:
       ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key $SSH_USER@$SSH_IP <<EOF
         set -e
 
-        cd "$REMOTE_DIR" || exit 1
+        cd "$PROJECT_DIR" || exit 1
 
         echo "Registry login... "
         echo "$REGISTRY_PASS" | docker login $DOCKER_REGISTRY -u $REGISTRY_USER --password-stdin
