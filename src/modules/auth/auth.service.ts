@@ -76,41 +76,5 @@ export const auth = betterAuth({
     maxPasswordLength: 128,
     autoSignIn: true,
     requireEmailVerification: false,
-  },
-  hooks: {
-    after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path.startsWith('/sign-in/email')) {
-        const app = ctx.getHeader('X-APP');
-        const session = ctx.context.newSession;
-        const user = session.user;
-
-        const allowedRoles: Record<string, UserRole[]> = {
-          CUSTOMER_APP: [UserRole.CUSTOMER],
-          ADMIN_APP: [
-            UserRole.PARTNER,
-            UserRole.STORE_MANAGER,
-            UserRole.SALES_ADVISOR,
-          ],
-          SUPER_ADMIN_APP: [UserRole.SUPER_ADMIN],
-        };
-
-        // Check if the user is allowed to connect
-        if (!allowedRoles[app]?.includes(user.role)) {
-          if (session) {
-            await auth.api.revokeSession({
-              body: { token: session.session.token || '' },
-              headers: ctx.request.headers,
-            });
-          }
-          return new Response(
-            JSON.stringify({
-              code: ErrorType.NOT_ALLOWED,
-              message: 'Your role is not allowed to access this app',
-            }),
-            { status: 403, headers: { 'Content-Type': 'application/json' } },
-          );
-        }
-      }
-    }),
-  },
+  }
 });
