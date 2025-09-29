@@ -2,13 +2,13 @@ import { db } from '@/database/connection';
 import * as schema from '@/database/schema';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { createAuthMiddleware, openAPI , twoFactor} from 'better-auth/plugins';
+import { createAuthMiddleware, openAPI, twoFactor } from 'better-auth/plugins';
 import { ErrorType } from 'types/common/error';
 import { UserRole } from 'types/enums/user';
 
 export const auth = betterAuth({
-  plugins: [openAPI(), 
-    twoFactor()
+  plugins: [openAPI(),
+  twoFactor()
   ],
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -46,9 +46,9 @@ export const auth = betterAuth({
     process.env.NODE_ENV === 'production'
       ? ['http://localhost:5173']
       : [
-          process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-          process.env.REACT_APP_URL || 'http://localhost:5173',
-        ],
+        process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+        process.env.REACT_APP_URL || 'http://localhost:5173',
+      ],
   user: {
     modelName: 'users',
     additionalFields: {
@@ -76,5 +76,8 @@ export const auth = betterAuth({
     maxPasswordLength: 128,
     autoSignIn: true,
     requireEmailVerification: false,
+  },
+  advanced: {
+    cookiePrefix: 'clicknvape_mobile'
   }
 });
