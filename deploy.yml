@@ -25,6 +25,8 @@ spec:
                 name: mobile-backend-config   # <-- changé
             - secretRef:
                 name: clicknvape-secret
+      imagePullSecrets:
+        - name: nexus-registry-secret
 ---
 # --- Service backend (ClusterIP interne) ---
 apiVersion: v1
@@ -39,6 +41,3 @@ spec:
     - port: 3000
       targetPort: 3000
       nodePort: 31000
----
-
-
