@@ -80,6 +80,6 @@ export const auth = betterAuth({
     requireEmailVerification: false,
   },
   advanced: {
-    cookiePrefix: 'clicknvape_mobile'
+    cookiePrefix: 'clicknvape_mobile_app'
   }
 });
