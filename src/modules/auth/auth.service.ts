@@ -52,9 +52,9 @@ export const auth = betterAuth({
   user: {
     modelName: 'users',
     additionalFields: {
-      role: { type: 'string', defaultValue: 'user', returned: true },
-      phoneNumber: { type: 'string', defaultValue: null, returned: true },
-      birthday: { type: 'string', defaultValue: null, returned: true }
+      role: { type: 'string', defaultValue: 'user', returned: true,optional: true,},
+      phoneNumber: { type: 'string', defaultValue: null, returned: true, optional: true },
+      birthday: { type: 'string', defaultValue: null, returned: true, optional: true }
     },
     deleteUser: {
       enabled: true,
