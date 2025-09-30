@@ -2,7 +2,7 @@ import { db } from '@/database/connection';
 import * as schema from '@/database/schema';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { createAuthMiddleware, openAPI, twoFactor } from 'better-auth/plugins';
+import { createAuthMiddleware, openAPI, phoneNumber, twoFactor } from 'better-auth/plugins';
 import { ErrorType } from 'types/common/error';
 import { UserRole } from 'types/enums/user';
 
@@ -53,6 +53,7 @@ export const auth = betterAuth({
     modelName: 'users',
     additionalFields: {
       role: { type: 'string', defaultValue: 'user', returned: true },
+      phoneNumber: { type: 'string', defaultValue: null, returned: true },
     },
     deleteUser: {
       enabled: true,
