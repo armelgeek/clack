@@ -22,6 +22,7 @@ export class ProductRepository {
 
     // Only include non-deleted products
     conditions.push(isNull(products.deletedAt));
+    conditions.push(eq(products.status, 'ACTIVATED'));
 
     // Search by name or category
     if (search) {

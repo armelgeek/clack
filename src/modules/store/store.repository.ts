@@ -24,6 +24,7 @@ export class StoreRepository {
 
     // Only include non-deleted stores
     conditions.push(isNull(stores.deletedAt));
+    conditions.push(eq(stores.status, 'ACTIVATED')); 
 
     // Search by name or address
     if (search) {
