@@ -3,7 +3,14 @@ import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { auth } from './auth/auth.service';
 import { StoreModule } from './store/store.module';
 import { StoreUsersModule } from './store-users/store-users.module';
+import { ProductModule } from './product/product.module';
+
 @Module({
-  imports: [AuthModule.forRoot(auth), StoreModule, StoreUsersModule],
+  imports: [
+    AuthModule.forRoot(auth),
+    StoreModule,
+    StoreUsersModule,
+    ProductModule,
+  ],
 })
 export class AppModule {}
