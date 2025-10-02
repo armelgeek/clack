@@ -32,6 +32,8 @@ export class ProductController {
       query.page || 1,
       query.limit || 10,
       query.search,
+      query.category,
+      
     );
   }
 

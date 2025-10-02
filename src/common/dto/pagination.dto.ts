@@ -37,6 +37,13 @@ export class SearchDto extends PaginationDto {
   })
   @IsOptional()
   search?: string;
+
+  @ApiProperty({
+    description: 'Filter by category',
+    required: false,
+  })
+  @IsOptional()
+  category?: string;
 }
 
 export class StoreSearchDto extends SearchDto {

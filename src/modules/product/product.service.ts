@@ -24,11 +24,13 @@ export class ProductService {
     page: number = 1,
     limit: number = 10,
     search?: string,
+    category?: string
   ): Promise<PaginatedResponse<TProduct>> {
     const { data, total } = await this.productRepository.findAll(
       page,
       limit,
       search,
+      category
     );
 
     const transformedData = data.map((product) =>
@@ -53,12 +55,14 @@ export class ProductService {
     page: number = 1,
     limit: number = 10,
     search?: string,
+    category?: string
   ): Promise<PaginatedResponse<TProduct>> {
     const { data, total } = await this.productRepository.findByStoreId(
       storeId,
       page,
       limit,
       search,
+      category,
     );
 
     const transformedData = data.map((product) =>

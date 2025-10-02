@@ -15,16 +15,14 @@ export class ProductRepository {
     return result;
   }
 
-  async findAll(page: number = 1, limit: number = 10, search?: string) {
+  async findAll(page: number = 1, limit: number = 10, search?: string, category?: string) {
     const offset = (page - 1) * limit;
 
     const conditions = [];
 
-    // Only include non-deleted products
     conditions.push(isNull(products.deletedAt));
     conditions.push(eq(products.status, 'ACTIVATED'));
 
-    // Search by name or category
     if (search) {
       conditions.push(
         or(
@@ -36,7 +34,6 @@ export class ProductRepository {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Get total count
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(products)
@@ -44,7 +41,6 @@ export class ProductRepository {
 
     const total = Number(countResult[0]?.count || 0);
 
-    // Get paginated results
     const results = await db.query.products.findMany({
       where: whereClause,
       limit,
@@ -66,15 +62,14 @@ export class ProductRepository {
     page: number = 1,
     limit: number = 10,
     search?: string,
+    category?: string
   ) {
     const offset = (page - 1) * limit;
 
     const conditions = [eq(products.storeId, storeId)];
 
-    // Only include non-deleted products
     conditions.push(isNull(products.deletedAt));
-
-    // Search by name or category
+    conditions.push(eq(products.status, 'ACTIVATED'));
     if (search) {
       conditions.push(
         or(
@@ -86,7 +81,6 @@ export class ProductRepository {
 
     const whereClause = and(...conditions);
 
-    // Get total count
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(products)
