@@ -49,7 +49,8 @@ metadata:
   name: api.staging.clicknvape.fr
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"   # <--- important !
+    acme.cert-manager.io/http01-edit-in-place: "true"
 spec:
   tls:
     - hosts:
