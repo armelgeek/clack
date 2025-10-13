@@ -55,4 +55,23 @@ export class ProductController {
   getOne(@Param('id') id: string): Promise<TProduct> {
     return this.productService.getProductById(id);
   }
+
+  @Get(':id/similar')
+  @ApiOperation({ summary: 'Get similar products' })
+  @ApiResponse({
+    status: 200,
+    description: 'Similar products fetched successfully',
+    type: [ProductResponseDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error while fetching similar products',
+  })
+  getSimilar(@Param('id') id: string): Promise<TProduct[]> {
+    return this.productService.getSimilarProducts(id);
+  }
 }

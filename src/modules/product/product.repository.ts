@@ -104,4 +104,24 @@ export class ProductRepository {
       total,
     };
   }
+
+  async findSimilar(productId: string, category: string, limit: number = 4) {
+    const conditions = and(
+      eq(products.category, category),
+      eq(products.status, 'ACTIVATED'),
+      isNull(products.deletedAt),
+      sql`${products.id} != ${productId}`,
+    );
+
+    const results = await db.query.products.findMany({
+      where: conditions,
+      limit,
+      orderBy: sql`random()`,
+      with: {
+        store: true,
+      },
+    });
+
+    return results;
+  }
 }

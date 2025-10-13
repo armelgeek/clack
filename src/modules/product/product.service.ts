@@ -82,6 +82,15 @@ export class ProductService {
     };
   }
 
+  async getSimilarProducts(productId: string): Promise<TProduct[]> {
+    const product = await this.getProductById(productId);
+    const similarProducts = await this.productRepository.findSimilar(
+      productId,
+      product.category,
+    );
+    return similarProducts.map((p) => this.transformProduct(p));
+  }
+
   private transformProduct(product: any): TProduct {
     return {
       id: product.id,
