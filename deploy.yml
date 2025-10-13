@@ -22,22 +22,47 @@ spec:
             - containerPort: 3000
           envFrom:
             - configMapRef:
-                name: mobile-backend-config   # <-- changé
+                name: mobile-backend-config
             - secretRef:
                 name: clicknvape-secret
       imagePullSecrets:
         - name: nexus-registry-secret
 ---
-# --- Service backend (ClusterIP interne) ---
 apiVersion: v1
 kind: Service
 metadata:
   name: clicknvape-backend
 spec:
-  type: NodePort  
+  type: ClusterIP 
   selector:
     app: clicknvape-backend
   ports:
     - port: 3000
       targetPort: 3000
-      nodePort: 31000
+      # nodePort: 31000
+---
+# ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api.staging.clicknvape.fr
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"  
+    acme.cert-manager.io/http01-edit-in-place: "true"
+spec:
+  tls:
+    - hosts:
+        - api.staging.clicknvape.fr
+      secretName: "api.staging.clicknvape.fr-tls-acme"
+  rules:
+    - host: api.staging.clicknvape.fr
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: clicknvape-backend
+                port:
+                  number: 3000
