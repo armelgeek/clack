@@ -5,11 +5,15 @@ import { AppModule } from './modules/app.module';
 const cookieParser = require('cookie-parser');
 import { Response } from 'express';
 import { auth } from './modules/auth/auth.service';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
+
+  // register global filter
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   app.use('/api/auth/*', async (req: any, res: Response) => {
     const allowedOrigin = req.headers.origin || '*';
