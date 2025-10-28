@@ -2,12 +2,16 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { TProduct } from 'types/product';
 import { PaginatedResponse, PaginationMeta } from 'types/common/pagination';
 import { ProductRepository } from './product.repository';
+import { ProductImagesRepository } from './productImages.repository';
 
 @Injectable()
 export class ProductService {
   private readonly logger = new Logger(ProductService.name);
 
-  constructor(private readonly productRepository: ProductRepository) {}
+  constructor(
+    private readonly productRepository: ProductRepository,
+    private readonly productImagesRepository: ProductImagesRepository,
+  ) {}
 
   async getProductById(id: string): Promise<TProduct> {
     const product = await this.productRepository.findById(id);
@@ -91,16 +95,28 @@ export class ProductService {
     return similarProducts.map((p) => this.transformProduct(p));
   }
 
-  private transformProduct(product: any): TProduct {
+  private async transformProduct(product: any): Promise<TProduct> {
+    let images: string[] = [];
+    let image: string | undefined = product.image;
+    if (product.owner === 'VAPOSTORE') {
+      const imgs = await this.productImagesRepository.findByProductId(product.id);
+      images = imgs.map(img => img.url);
+      image = images.length > 0 ? images[0] : undefined;
+    } else if (product.owner) {
+      const imgs = await this.productImagesRepository.findByProductId(product.id);
+      images = imgs.map(img => img.url);
+    }
     return {
       id: product.id,
       storeId: product.storeId,
       name: product.name,
       category: product.category,
-      image: product.image,
+      image,
+      images,
       priceHT: product.priceHT !== null ? Number(product.priceHT) : 0,
       priceTTC: product.priceTTC !== null ? Number(product.priceTTC) : 0,
       vat: product.vat,
+      owner: product.owner,
       status: product.status,
       quantity: product.quantity !== null ? Number(product.quantity) : 0,
       createdAt: product.createdAt,
