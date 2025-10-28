@@ -88,7 +88,7 @@ export class ProductService {
       productId,
       product.category,
     );
-    return similarProducts.map((p) => this.transformProduct(p));
+    return await Promise.all(similarProducts.map((p) => this.transformProduct(p)));
   }
 
   private async transformProduct(product: any): Promise<TProduct> {
