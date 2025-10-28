@@ -37,9 +37,7 @@ export class ProductService {
       category
     );
 
-    const transformedData = data.map((product) =>
-      this.transformProduct(product),
-    );
+    const transformedData = await Promise.all(data.map((product) => this.transformProduct(product)));
 
     const meta: PaginationMeta = {
       page,
@@ -69,9 +67,7 @@ export class ProductService {
       category,
     );
 
-    const transformedData = data.map((product) =>
-      this.transformProduct(product),
-    );
+    const transformedData = await Promise.all(data.map((product) => this.transformProduct(product)));
 
     const meta: PaginationMeta = {
       page,
@@ -113,12 +109,12 @@ export class ProductService {
       category: product.category,
       image,
       images,
-      priceHT: product.priceHT !== null ? Number(product.priceHT) : 0,
-      priceTTC: product.priceTTC !== null ? Number(product.priceTTC) : 0,
+      priceHT: typeof product.priceHT === 'number' ? product.priceHT : Number(product.priceHT ?? 0),
+      priceTTC: typeof product.priceTTC === 'number' ? product.priceTTC : Number(product.priceTTC ?? 0),
       vat: product.vat,
       owner: product.owner,
       status: product.status,
-      quantity: product.quantity !== null ? Number(product.quantity) : 0,
+      quantity: typeof product.quantity === 'number' ? product.quantity : Number(product.quantity ?? 0),
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
       deletedAt: product.deletedAt,
