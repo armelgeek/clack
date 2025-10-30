@@ -1,6 +1,6 @@
 import { db } from '@/database/connection';
 import { Injectable } from '@nestjs/common';
-import { productImages } from 'vapostore-db';
+import { productImages } from '@/database';
 import { eq } from 'drizzle-orm';
 
 @Injectable()

@@ -1,3 +1,14 @@
+export type TClientProduct = {
+  id: string;
+  image: string;
+  name: string;
+  category_id: string;
+  pv_ttc: number;
+  pv_ht: number;
+  tva: string;
+  stock: number;
+};
+
 export type TProduct = {
   id: string;
   storeId: string;

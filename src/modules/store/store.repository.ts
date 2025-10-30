@@ -1,13 +1,13 @@
 import { db } from '@/database/connection';
 import { Injectable } from '@nestjs/common';
 import { and, eq, ilike, or, sql, isNull } from 'drizzle-orm';
-import { stores } from 'vapostore-db';
+import { stores } from '@/database';
 
 @Injectable()
 export class StoreRepository {
   async findById(id: string) {
     const result = await db.query.stores.findFirst({
-      where: (s, { eq }) => eq(s.id, id),
+      where: eq(stores.id, id),
     });
     return result;
   }

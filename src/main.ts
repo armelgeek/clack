@@ -15,6 +15,14 @@ async function bootstrap() {
   // register global filter
   app.useGlobalFilters(new AllExceptionsFilter());
 
+  // Redirect root and favicon to docs
+  app.use('/', (req: any, res: Response, next: any) => {
+    if (req.path === '/' || req.path === '/favicon.ico') {
+      return res.redirect('/docs');
+    }
+    next();
+  });
+
   app.use('/api/auth/*', async (req: any, res: Response) => {
     const allowedOrigin = req.headers.origin || '*';
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
@@ -116,7 +124,7 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);
-  console.log(`📚 Standard Swagger UI: http://localhost:${port}/docs`);
+  console.log(`📚 API Documentation (Scalar): http://localhost:${port}/docs`);
   console.log(
     `🔐 Better Auth Docs: http://localhost:${port}/api/auth/reference`,
   );

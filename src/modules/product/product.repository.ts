@@ -1,13 +1,13 @@
 import { db } from '@/database/connection';
 import { Injectable } from '@nestjs/common';
 import { and, eq, ilike, or, sql, isNull } from 'drizzle-orm';
-import { products } from 'vapostore-db';
+import { products } from '@/database';
 
 @Injectable()
 export class ProductRepository {
   async findById(id: string) {
     const result = await db.query.products.findFirst({
-      where: (p, { eq }) => eq(p.id, id),
+      where: eq(products.id, id),
       with: {
         store: true,
       },
@@ -15,7 +15,7 @@ export class ProductRepository {
     return result;
   }
 
-  async findAll(page: number = 1, limit: number = 10, search?: string, category?: string) {
+  async findAll(page: number = 1, limit: number = 10, search?: string, _category?: string) {
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -62,7 +62,7 @@ export class ProductRepository {
     page: number = 1,
     limit: number = 10,
     search?: string,
-    category?: string
+    _category?: string
   ) {
     const offset = (page - 1) * limit;
 
@@ -123,5 +123,45 @@ export class ProductRepository {
     });
 
     return results;
+  }
+
+  // Methods from superadmin for sync functionality
+  async getProductById(id: string) {
+    // Use a direct expression to avoid callback-based operator typing issues
+    return await db.query.products.findFirst({
+      where: eq(products.id, id),
+    });
+  }
+
+  async upsertProduct(productData: any) {
+    return await db
+      .insert(products)
+      .values(productData)
+      .onConflictDoUpdate({
+        target: [products.id, products.storeId],
+        set: productData,
+      })
+      .execute();
+  }
+
+  async countProductsByStoreId(storeId: string) {
+    const result = await db
+      .select({
+        count: sql<number>`cast(count(${products.id}) as int)`,
+      })
+      .from(products)
+      .where(eq(products.storeId, storeId));
+
+    return result[0]?.count ?? 0;
+  }
+
+  async countAllProducts() {
+    const result = await db
+      .select({
+        count: sql<number>`cast(count(${products.id}) as int)`,
+      })
+      .from(products);
+
+    return result[0]?.count ?? 0;
   }
 }

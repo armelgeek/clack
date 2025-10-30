@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { TProduct } from 'types/product';
 import { PaginatedResponse } from 'types/common/pagination';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   PaginatedProductsResponseDto,
   ProductResponseDto,

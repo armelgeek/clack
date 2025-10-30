@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { StoreUsersService } from './store-users.service';
 import { StoreUsersRepository } from './store-users.repository';
-import { StoreModule } from '../store/store.module';
 import { StoreUsersController } from './store-users.controller';
 
 @Module({
