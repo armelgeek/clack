@@ -37,13 +37,15 @@ export class UserRepository {
     phoneNumber: string;
     role: UserRole;
   }) {
-    const { email, password, name /* phoneNumber, role kept for callers */ } = data;
+    const { email, password, name, phoneNumber, role } = data;
 
     await auth.api.signUpEmail({
       body: {
         email,
         password,
         name,
+        phoneNumber: phoneNumber ?? '',
+        birthday: '',
       },
     });
 
