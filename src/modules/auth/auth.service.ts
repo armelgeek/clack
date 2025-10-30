@@ -1,6 +1,6 @@
 import { db } from '@/database/connection';
 import * as schema from '@/database/schema';
-import { betterAuth, Auth } from 'better-auth';
+import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { createAuthMiddleware, openAPI, twoFactor } from 'better-auth/plugins';
 import { eq } from 'drizzle-orm';
@@ -10,7 +10,7 @@ import { MailService } from '../mail/mail.service';
 
 const mailServiceInstance = new MailService();
 
-export const auth: Auth = betterAuth({
+export const auth = betterAuth({
   plugins: [openAPI(), twoFactor()],
   database: drizzleAdapter(db, {
     provider: 'pg',
