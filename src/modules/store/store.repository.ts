@@ -2,6 +2,7 @@ import { db } from '@/database/connection';
 import { Injectable } from '@nestjs/common';
 import { and, eq, ilike, or, sql, isNull } from 'drizzle-orm';
 import { stores } from '@/database';
+import { UpdateStoreDto } from './dtos/update-store.dto';
 
 @Injectable()
 export class StoreRepository {
@@ -24,7 +25,7 @@ export class StoreRepository {
 
     // Only include non-deleted stores
     conditions.push(isNull(stores.deletedAt));
-    conditions.push(eq(stores.status, 'ACTIVATED')); 
+    conditions.push(eq(stores.status, 'ACTIVATED'));
 
     // Search by name or address
     if (search) {
@@ -64,5 +65,14 @@ export class StoreRepository {
       data: results,
       total,
     };
+  }
+
+  async updateStore(storeId: string, storeData: UpdateStoreDto) {
+    const updatedStores = await db
+      .update(stores)
+      .set(storeData)
+      .where(eq(stores.id, storeId))
+      .returning();
+    return updatedStores[0];
   }
 }

@@ -1,5 +1,5 @@
 // Explicit exports for better auto-completion and type suggestions
-export { client, db } from "./connection";
+export { client, db } from './connection';
 export {
   users,
   sessions,
@@ -7,8 +7,10 @@ export {
   verifications,
   stores,
   storeUsers,
+  categories,
   products,
   productImages,
+  userInventoryPreferences,
   twoFactor,
   externalStoreMappings,
   storeFolders,
@@ -26,4 +28,4 @@ export {
   type NewStoreFolder,
   type HeadBand,
   type NewHeadBand,
-} from "./schema";
+} from './schema';

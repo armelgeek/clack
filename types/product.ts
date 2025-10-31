@@ -1,3 +1,5 @@
+import { ProductOwner, ProductStatus } from './enums/product';
+
 export type TClientProduct = {
   id: string;
   image: string;
@@ -14,14 +16,12 @@ export type TProduct = {
   storeId: string;
   name: string;
   category: string;
-  image?: string;
-  images?: string[];
-  owner?: string;
   priceHT: number;
   priceTTC: number;
   vat: string;
-  status: string;
+  status: ProductStatus | string;
   quantity: number;
+  owner: ProductOwner | string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;

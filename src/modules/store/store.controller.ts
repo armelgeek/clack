@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { StoreService } from './store.service';
 import { ProductService } from '../product/product.service';
 import { TStore } from 'types/store';
@@ -11,6 +11,9 @@ import {
   PaginatedProductsResponseDto,
 } from '@/common/dto/response.dto';
 import { StoreSearchDto, SearchDto } from '@/common/dto/pagination.dto';
+import { FetchProductsByStoreDto } from '../product/dtos/fetch-products-by-store-id.dto';
+import { BasicListResponse } from 'types/common/response';
+import { UpdateStoreDto } from './dtos/update-store.dto';
 
 @ApiTags('stores')
 @Controller('stores')
@@ -85,5 +88,53 @@ export class StoreController {
       query.limit || 10,
       query.search,
     );
+  }
+
+  @Get(':id/products/filtered')
+  @ApiOperation({ summary: 'Fetch products' })
+  @ApiResponse({ status: 200, description: 'Products fetched successfully' })
+  @ApiResponse({
+    status: 500,
+    description: 'Error while fetching products',
+  })
+  async fetchProductsByStoreId(
+    @Param('id') storeId: string,
+    @Query() data: FetchProductsByStoreDto,
+  ): Promise<BasicListResponse<TProduct>> {
+    const products = await this.productService.fetchFilteredProductsByStoreId(
+      storeId,
+      data,
+    );
+    return products;
+  }
+
+  @Put(':storeId')
+  @ApiOperation({ summary: 'Update store' })
+  @ApiResponse({
+    status: 200,
+    description: 'Store updated successfully',
+  })
+  @ApiResponse({
+    status: 500,
+    description: `Error while updating store`,
+  })
+  async updateStore(
+    @Param('storeId') storeId: string,
+    @Body() dto: UpdateStoreDto,
+  ): Promise<{
+    id: string;
+    name: string;
+    phoneNumber: string;
+    createdAt: Date;
+    updatedAt: Date;
+    status: string;
+    logoUrl: string;
+    address: string;
+    latitude: string;
+    longitude: string;
+    openingHours: unknown;
+    deletedAt: Date;
+  }> {
+    return this.storeService.updateStore(storeId, dto);
   }
 }

@@ -8,9 +8,7 @@ import { auth } from './modules/auth/auth.service';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    bodyParser: false,
-  });
+  const app = await NestFactory.create(AppModule);
 
   // register global filter
   app.useGlobalFilters(new AllExceptionsFilter());
@@ -75,7 +73,6 @@ async function bootstrap() {
 
       response.headers.forEach((value, key) => {
         if (key.toLowerCase() !== 'set-cookie') {
-
           res.setHeader(key, value);
         }
       });
