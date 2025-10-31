@@ -18,6 +18,8 @@ import { StoreFolderModule } from './store-folder/store-folder.module';
 import { HeadbandModule } from './headband/headband.module';
 import { ExternalStoreMappingModule } from './external-store-mappings/external-store-mappings.module';
 import { redisStore } from 'cache-manager-redis-yet';
+import { CategoryModule } from './category/category.module';
+import { UserInventoryPreferencesModule } from './user-inventory-preferences/user-inventory-preferences.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { redisStore } from 'cache-manager-redis-yet';
     StoreFolderModule,
     HeadbandModule,
     ExternalStoreMappingModule,
+    CategoryModule,
+    UserInventoryPreferencesModule,
   ],
 })
 export class AppModule {}

@@ -13,3 +13,10 @@ export type TUser = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type InventoryPreference = {
+  id?: string;
+  userId: string;
+  isNotified: boolean;
+  minThreshold: number;
+};

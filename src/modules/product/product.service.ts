@@ -1,7 +1,16 @@
-import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  Inject,
+  ConflictException,
+} from '@nestjs/common';
 import { TProduct, TClientProduct } from 'types/product';
 import { PaginatedResponse, PaginationMeta } from 'types/common/pagination';
-import { ProductRepository } from './product.repository';
+import {
+  ProductRepository,
+  UpdateProductImagesData,
+} from './product.repository';
 import { ProductImagesRepository } from './productImages.repository';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -10,16 +19,38 @@ import { firstValueFrom } from 'rxjs';
 import { FetchProductsByCategoryDto } from './dtos/fetch-products-by-category.dto';
 import { BasicListResponse } from 'types/common/response';
 import { generateBasicAuthToken } from 'utils/auth';
+import { FetchProductsByStoreDto } from './dtos/fetch-products-by-store-id.dto';
+import { ProductStatus } from 'types/enums/product';
+import { MemoryStoredFile } from 'nestjs-form-data';
+import { v4 as uuidv4 } from 'uuid';
+import { FileUploaderService } from '../file-uploader/services/file-uploader.service';
+import {
+  CreateProductDto,
+  CreateProductImageData,
+} from './dtos/create-product.dto';
+import { UpdateProductDto } from './dtos/update-product.dto';
+
+export interface UploadedFileResponse {
+  url: string;
+  filename: string;
+  objectKey: string;
+}
+
+interface CustomMemoryStoredFile extends MemoryStoredFile {
+  name?: string;
+}
 
 @Injectable()
 export class ProductService {
   private readonly logger = new Logger(ProductService.name);
   private readonly nextoreApiUrl: string;
   private readonly basicAuthToken: string;
+  private readonly VAT_RATE = 0.2;
 
   constructor(
     private readonly productRepository: ProductRepository,
     private readonly productImagesRepository: ProductImagesRepository,
+    private fileUploaderService: FileUploaderService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -48,18 +79,18 @@ export class ProductService {
     page: number = 1,
     limit: number = 10,
     search?: string,
-    category?: string
+    category?: string,
   ): Promise<PaginatedResponse<TProduct>> {
     const { data, total } = await this.productRepository.findAll(
       page,
       limit,
       search,
-      category
+      category,
     );
 
-    const transformedData = await Promise.all(data.map((product) =>
-      this.transformProduct(product),
-    ));
+    const transformedData = await Promise.all(
+      data.map((product) => this.transformProduct(product)),
+    );
 
     const meta: PaginationMeta = {
       page,
@@ -79,7 +110,7 @@ export class ProductService {
     page: number = 1,
     limit: number = 10,
     search?: string,
-    category?: string
+    category?: string,
   ): Promise<PaginatedResponse<TProduct>> {
     const { data, total } = await this.productRepository.findByStoreId(
       storeId,
@@ -89,9 +120,9 @@ export class ProductService {
       category,
     );
 
-    const transformedData = await Promise.all(data.map((product) =>
-      this.transformProduct(product),
-    ));
+    const transformedData = await Promise.all(
+      data.map((product) => this.transformProduct(product)),
+    );
 
     const meta: PaginationMeta = {
       page,
@@ -119,20 +150,22 @@ export class ProductService {
     let images: string[] = [];
     let image: string | undefined = product.image;
     if (product.owner === 'VAPOSTORE') {
-      const imgs = await this.productImagesRepository.findByProductId(product.id);
-      images = imgs.map(img => img.url);
+      const imgs = await this.productImagesRepository.findByProductId(
+        product.id,
+      );
+      images = imgs.map((img) => img.url);
       image = images.length > 0 ? images[0] : undefined;
     } else if (product.owner) {
-      const imgs = await this.productImagesRepository.findByProductId(product.id);
-      images = imgs.map(img => img.url);
+      const imgs = await this.productImagesRepository.findByProductId(
+        product.id,
+      );
+      images = imgs.map((img) => img.url);
     }
     return {
       id: product.id,
       storeId: product.storeId,
       name: product.name,
       category: product.category,
-      image,
-      images,
       priceHT: product.priceHT !== null ? Number(product.priceHT) : 0,
       priceTTC: product.priceTTC !== null ? Number(product.priceTTC) : 0,
       vat: product.vat,
@@ -204,5 +237,188 @@ export class ProductService {
     await this.cacheManager.set(cacheKey, products, 1000 * 60 * 5);
 
     return products;
+  }
+
+  // Service methods for store admin
+  async fetchFilteredProductsByStoreId(
+    storeId: string,
+    params: FetchProductsByStoreDto,
+  ): Promise<BasicListResponse<TProduct>> {
+    try {
+      const allProducts =
+        await this.productRepository.fetchFilteredProductsByStoreId(
+          storeId,
+          params,
+        );
+      const totalItems =
+        await this.productRepository.countFilteredProductsByStoreId(
+          storeId,
+          params,
+        );
+
+      return {
+        data: allProducts,
+        total: totalItems,
+      };
+    } catch (e) {
+      this.logger.error('Error fetching out of stock products', e);
+    }
+  }
+
+  async updateProductStatus(productId: string, status: ProductStatus) {
+    const product = this.getProductById(productId);
+
+    if (!product) {
+      this.logger.error('Product not found');
+      throw new NotFoundException('Product not found');
+    }
+
+    const updatedProduct = await this.productRepository.updateProductStatus(
+      productId,
+      status,
+    );
+    return updatedProduct;
+  }
+
+  private async handleUploadProductImages(
+    images: MemoryStoredFile[],
+    storeId: string,
+  ): Promise<UploadedFileResponse[]> {
+    try {
+      const uploadPromises = images.map(async (image, index) => {
+        const fileExtension = image.originalName.split('.').pop() || 'jpg';
+        const uniqueId = uuidv4();
+
+        const objectName = `products/${storeId}/${uniqueId}_${index}.${fileExtension}`;
+
+        const uploadedImage = await this.fileUploaderService.uploadFile(
+          image,
+          objectName,
+        );
+
+        return {
+          url: uploadedImage.url,
+          filename: uploadedImage.filename,
+          objectKey: uploadedImage.objectKey,
+        };
+      });
+
+      return await Promise.all(uploadPromises);
+    } catch (error) {
+      console.error('Failed to upload product image:', error);
+      throw new Error(`Upload failed: ${error.message}`);
+    }
+  }
+
+  async createProduct(dto: CreateProductDto) {
+    const priceHT = dto.priceTTC / (1 + this.VAT_RATE);
+
+    const uploadedUrls = await this.handleUploadProductImages(
+      dto.images,
+      dto.storeId,
+    );
+
+    const productData = {
+      ...dto,
+      id: uuidv4(),
+      priceHT: priceHT,
+      vat: (this.VAT_RATE * 100).toFixed(2) + '%',
+    };
+
+    // TODO: Avoid creating a new other product which already exists
+    const existingProduct = await this.productRepository.getOtherProductByName(
+      productData.name,
+    );
+    if (existingProduct) {
+      this.logger.error('Product already exists');
+      throw new ConflictException('Product already exists');
+    }
+
+    const newProduct = await this.productRepository.createProductWithImages(
+      productData,
+      uploadedUrls,
+    );
+
+    return newProduct;
+  }
+
+  async deleteProduct(productId: string) {
+    try {
+      const product = await this.productRepository.getProductById(productId);
+
+      if (!product) {
+        this.logger.error('Product not found');
+        throw new NotFoundException('Product not found');
+      }
+
+      const deletedProduct =
+        await this.productRepository.deleteProduct(productId);
+
+      return deletedProduct;
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+      throw new Error(`Delete product failed: ${error.message}`);
+    }
+  }
+
+  async updateProduct(productId: string, updateProductDto: UpdateProductDto) {
+    const { images, ...productData } = updateProductDto;
+    const imageData: CustomMemoryStoredFile[] =
+      images as CustomMemoryStoredFile[];
+
+    const oldImageFiles =
+      imageData?.filter((file) => file.name && file.name.startsWith('http')) ||
+      [];
+
+    const newImageFiles =
+      imageData?.filter(
+        (file) => !file.name || !file.name.startsWith('http'),
+      ) || [];
+
+    const imagesToKeepUrls: string[] = oldImageFiles.map(
+      (file) => file.name as string,
+    );
+
+    let newImagesData: CreateProductImageData[] = [];
+
+    if (newImageFiles.length > 0) {
+      const uploadedResponses: UploadedFileResponse[] =
+        await this.handleUploadProductImages(
+          newImageFiles as MemoryStoredFile[],
+          updateProductDto.storeId,
+        );
+
+      newImagesData = uploadedResponses.map((res) => ({
+        ...res,
+        storeId: updateProductDto.storeId,
+      }));
+    }
+
+    let priceHT: number | undefined;
+    let vat: string | undefined;
+
+    if (productData.priceTTC !== undefined) {
+      priceHT = productData.priceTTC / (1 + this.VAT_RATE);
+      vat = (this.VAT_RATE * 100).toFixed(2) + '%';
+    }
+
+    const productDataForUpdate = {
+      ...productData,
+      ...(priceHT !== undefined && { priceHT }),
+      ...(vat !== undefined && { vat }),
+    };
+
+    const imageUpdateData: UpdateProductImagesData = {
+      imagesToKeepUrls,
+      newImagesData,
+    };
+
+    const updatedProduct = await this.productRepository.updateProduct(
+      productId,
+      productDataForUpdate,
+      imageUpdateData,
+    );
+
+    return updatedProduct;
   }
 }

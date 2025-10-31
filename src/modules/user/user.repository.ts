@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { UserRole } from 'types/enums/user';
 import { users, storeUsers } from '@/database';
 import { auth } from '../auth/auth.service';
+import { TUser } from 'types/user';
+import { eq } from 'drizzle-orm';
 
 @Injectable()
 export class UserRepository {
@@ -24,7 +26,7 @@ export class UserRepository {
     });
   }
 
-  async findById(userId: string) { 
+  async findById(userId: string) {
     return db.query.users.findFirst({
       where: (u, { eq }: any) => eq(u.id, userId),
     });
@@ -67,7 +69,22 @@ export class UserRepository {
     return !!link;
   }
 
+  async findUserIdsByRole(role: UserRole) {
+    const result = await db
+      .select({
+        id: users.id,
+      })
+      .from(users)
+      .where(eq(users.role, role))
+      .execute();
+
+    return result;
+  }
+
   async updateStatus(userId: string, status: boolean) {
-    await db.update(users).set({ status }).where(((u, { eq }: any) => eq(u.id, userId)) as any);
+    await db
+      .update(users)
+      .set({ status })
+      .where(((u, { eq }: any) => eq(u.id, userId)) as any);
   }
 }

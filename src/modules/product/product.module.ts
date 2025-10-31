@@ -4,9 +4,10 @@ import { ProductController } from './product.controller';
 import { ProductRepository } from './product.repository';
 import { ProductImagesRepository } from './productImages.repository';
 import { HttpModule } from '@nestjs/axios';
+import { FileUploaderModule } from '../file-uploader/file-uploader.module';
 
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule, FileUploaderModule],
   controllers: [ProductController],
   providers: [ProductRepository, ProductService, ProductImagesRepository],
   exports: [ProductService, ProductRepository],
