@@ -14,7 +14,7 @@ export class FetchProductsByStoreDto {
   @ApiPropertyOptional({ example: '17', description: 'Category ID' })
   @IsOptional()
   @IsString()
-  categoryId: string;
+  categoryId?: string;
 
   @ApiPropertyOptional({
     description: 'Product owner',
@@ -22,7 +22,7 @@ export class FetchProductsByStoreDto {
   })
   @IsOptional()
   @IsEnum(ProductOwner)
-  owner: ProductOwner;
+  owner?: ProductOwner;
 
   @ApiPropertyOptional({
     description: 'Product status',
@@ -30,12 +30,12 @@ export class FetchProductsByStoreDto {
   })
   @IsOptional()
   @IsEnum(ProductStatus)
-  status: ProductStatus;
+  status?: ProductStatus;
 
   @ApiPropertyOptional({ example: 5, description: 'Threshold' })
   @IsOptional()
   @Transform(({ value }) => Number(value))
-  threshold: number;
+  threshold?: number;
 
   @ApiPropertyOptional({ description: 'Number of items per page', example: 10 })
   @IsOptional()

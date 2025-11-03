@@ -12,17 +12,17 @@ import { TNotification } from 'types/notification';
 
 @WebSocketGateway({
   cors: {
-    origin: [process.env.REACT_APP_URL_SUPERADMIN || 'http://localhost:5174'],
+    origin: [process.env.REACT_APP_URL_ADMIN || 'http://localhost:5173'],
     credentials: true,
   },
-  namespace: '/super-admin-notifications',
+  namespace: '/admin-notifications',
 })
-export class StoreStatusGateway
+export class StockAlertGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
   server: Server;
-  private readonly logger = new Logger(StoreStatusGateway.name);
+  private readonly logger = new Logger(StockAlertGateway.name);
 
   afterInit(_server: Server) {
     this.logger.log('WebSocket Gateway Initialized.');
@@ -42,10 +42,10 @@ export class StoreStatusGateway
     console.log(`Client ${client.id} joined notification room: ${userId}`);
   }
 
-  notifyStoreStatusChange(notification: TNotification) {
+  notifyOutOfStockProduct(notification: TNotification) {
     const targetUserId = notification.userId;
 
-    this.server.to(targetUserId).emit('storeStatusUpdated', notification);
+    this.server.to(targetUserId).emit('outOfStockProduct', notification);
     this.logger.log(`Notification sent to room: ${targetUserId}`);
   }
 }
