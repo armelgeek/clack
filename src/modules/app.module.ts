@@ -20,6 +20,7 @@ import { ExternalStoreMappingModule } from './external-store-mappings/external-s
 import { redisStore } from 'cache-manager-redis-yet';
 import { CategoryModule } from './category/category.module';
 import { UserInventoryPreferencesModule } from './user-inventory-preferences/user-inventory-preferences.module';
+import { StockAlertModule } from './stock-alert/stock-alert.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { UserInventoryPreferencesModule } from './user-inventory-preferences/use
     ExternalStoreMappingModule,
     CategoryModule,
     UserInventoryPreferencesModule,
+    StockAlertModule,
   ],
 })
 export class AppModule {}

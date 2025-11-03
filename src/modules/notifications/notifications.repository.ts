@@ -29,9 +29,12 @@ export class NotificationRepository {
     return db.query.notifications.findMany({
       // Use drizzle expression helpers to build the condition
       where: (n) =>
-        and(eq(n.platform, platform), or(eq(n.userId, userId), isNull(n.userId))),
+        and(
+          eq(n.platform, platform),
+          or(eq(n.userId, userId), isNull(n.userId)),
+        ),
       orderBy: (n) => desc(n.createdAt),
-      limit: 5,
+      limit: 10,
     });
   }
 
@@ -40,9 +43,19 @@ export class NotificationRepository {
   ): Promise<TNotification[]> {
     if (!dto.notificationIds || dto.notificationIds.length === 0) return [];
 
+    const { notificationIds, ...updateData } = dto;
+
+    const updatePayload = Object.fromEntries(
+      Object.entries(updateData).filter(
+        ([, value]) => value !== undefined && value !== null,
+      ),
+    );
+
+    if (Object.keys(updatePayload).length === 0) return [];
+
     const result = await db
       .update(notifications)
-      .set(dto)
+      .set(updatePayload)
       .where(inArray(notifications.id, dto.notificationIds))
       .returning();
 
