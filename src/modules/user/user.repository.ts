@@ -4,10 +4,55 @@ import { UserRole } from 'types/enums/user';
 import { users, storeUsers } from '@/database';
 import { auth } from '../auth/auth.service';
 import { TUser } from 'types/user';
-import { eq } from 'drizzle-orm';
+import { and, eq, ilike, inArray, sql } from 'drizzle-orm';
 
 @Injectable()
 export class UserRepository {
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    name: string,
+    email: string,
+    roles: UserRole[],
+  ) {
+    const offset = (page - 1) * limit;
+
+    const conditions = [];
+
+    if (name) {
+      conditions.push(ilike(users.name, `%${name}%`));
+    }
+
+    if (email) {
+      conditions.push(ilike(users.email, `%${email}%`));
+    }
+
+    if (roles.length > 0) {
+      conditions.push(inArray(users.role, roles));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(whereClause);
+
+    const total = Number(countResult[0]?.count || 0);
+
+    const results = await db.query.users.findMany({
+      where: whereClause,
+      limit,
+      offset,
+      orderBy: (users, { desc }) => [desc(users.createdAt)],
+    });
+
+    return {
+      data: results,
+      total,
+    };
+  }
+
   async findByRole(role: UserRole) {
     return db.query.users.findMany({
       where: (u, { eq }: any) => eq(u.role, role),
