@@ -1,28 +1,40 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsInt,
-  IsNotEmpty,
   IsOptional,
   IsString,
   Min,
 } from 'class-validator';
-import { ProductOwner, ProductStatus } from 'types/enums/product';
+import { ProductStatus } from 'types/enums/product';
+import { UserRole } from 'types/enums/user';
 
-export class FetchProductsByStoreDto {
-  @ApiPropertyOptional({ example: '17', description: 'Category ID' })
+export class FetchUsersDto {
+  @ApiPropertyOptional({ example: 'john', description: 'User name' })
   @IsOptional()
   @IsString()
-  categoryId?: string;
+  name?: string;
 
   @ApiPropertyOptional({
-    description: 'Product owner',
-    example: ProductOwner.VAPOSTORE,
+    example: 'john@example.com',
+    description: 'User email',
   })
   @IsOptional()
-  @IsEnum(ProductOwner)
-  owner?: ProductOwner;
+  @IsString()
+  email?: string;
+
+  @ApiPropertyOptional({
+    description: 'Status of the user to filter by',
+    example: [UserRole.STORE_MANAGER, UserRole.SALES_ADVISOR, UserRole.PARTNER],
+    enum: UserRole,
+    isArray: true,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(UserRole, { each: true })
+  roles?: UserRole[];
 
   @ApiPropertyOptional({
     description: 'Product status',
@@ -31,11 +43,6 @@ export class FetchProductsByStoreDto {
   @IsOptional()
   @IsEnum(ProductStatus)
   status?: ProductStatus;
-
-  @ApiPropertyOptional({ example: 5, description: 'Threshold' })
-  @IsOptional()
-  @Transform(({ value }) => Number(value))
-  threshold?: number;
 
   @ApiPropertyOptional({ description: 'Number of items per page', example: 10 })
   @IsOptional()

@@ -7,9 +7,10 @@ const config = () => {
       'postgresql://postgres:root@localhost:5432/clicknvape?search_path=public',
     betterAuthUrl: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
     betterAuthSecret: process.env.BETTER_AUTH_SECRET,
-    appUrl: process.env.REACT_APP_URL_ADMIN || 'http://localhost:5173',
+    clientAppUrl: process.env.REACT_APP_URL_CLIENT || 'http://localhost:5173',
+    adminAppUrl: process.env.REACT_APP_URL_ADMIN || 'http://localhost:5173',
     superAdminAppUrl:
-      process.env.SUPER_ADMIN_APP_URL || 'http://localhost:5174',
+      process.env.REACT_APP_URL_SUPERADMIN || 'http://localhost:5174',
     nextoreApi: {
       url: process.env.NEXTORE_API_URL,
       username: process.env.NEXTORE_API_USERNAME,

@@ -240,6 +240,17 @@ export class ProductService {
   }
 
   // Service methods for store admin
+  async getProductDetailsById(id: string): Promise<TProduct> {
+    const product = await this.productRepository.getProductDetailsById(id);
+
+    if (!product) {
+      this.logger.error('Product not found');
+      throw new NotFoundException('Product not found');
+    }
+
+    return product;
+  }
+
   async fetchFilteredProductsByStoreId(
     storeId: string,
     params: FetchProductsByStoreDto,

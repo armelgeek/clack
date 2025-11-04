@@ -39,7 +39,6 @@ export const auth = betterAuth({
           process.env.REACT_APP_URL_SUPERADMIN || 'http://localhost:5173',
           process.env.REACT_APP_URL_ADMIN || 'http://localhost:5174',
           process.env.REACT_APP_URL_CLIENT || 'http://localhost:5173',
-          process.env.SUPER_ADMIN_APP_URL || 'http://localhost:5173',
         ]
       : [
           process.env.BETTER_AUTH_URL || 'http://localhost:3000',
@@ -96,7 +95,7 @@ export const auth = betterAuth({
     autoSignIn: process.env.AUTH_AUTO_SIGN_IN !== 'false',
     requireEmailVerification: false,
     sendResetPassword: async ({ user, token }) => {
-  const resetUrl = `${process.env.REACT_APP_URL_SUPERADMIN}/reset-password?token=${token}`;
+      const resetUrl = `${process.env.REACT_APP_URL_SUPERADMIN}/reset-password?token=${token}`;
 
       // Use schema.* references to avoid cross-module drizzle type mismatches
       const storeData = await db.query.storeUsers.findFirst({
@@ -124,6 +123,12 @@ export const auth = betterAuth({
         const session = ctx.context.newSession;
         const user = session.user;
 
+        const isVapostoreUser = user.email.endsWith('@vapostore.com');
+
+        if (isVapostoreUser) {
+          return;
+        }
+
         // Define allowed roles per app
         const allowedRoles: Record<string, UserRole[]> = {
           CUSTOMER_APP: [UserRole.CUSTOMER],
@@ -141,9 +146,9 @@ export const auth = betterAuth({
             // Delete session if role not allowed
             if (session && session.session.id) {
               // Use schema.sessions to avoid duplicate symbol import issues
-              await db.delete(schema.sessions).where(
-                eq(schema.sessions.id, session.session.id),
-              );
+              await db
+                .delete(schema.sessions)
+                .where(eq(schema.sessions.id, session.session.id));
             }
 
             const cookieName = `${process.env.AUTH_COOKIE_PREFIX || 'clicknvape_app'}-session`;

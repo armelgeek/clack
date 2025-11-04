@@ -4,6 +4,7 @@ import { UserRole } from 'types/enums/user';
 import { CreateStoreUserDto } from './dto/create-store-user.dto';
 import { MailService } from './mail.service';
 import { StoreRepository } from '../store/store.repository';
+import { FetchUsersDto } from './dto/fetch-users.dto';
 @Injectable()
 export class UserService {
   constructor(
@@ -11,6 +12,16 @@ export class UserService {
     private readonly mailService: MailService,
     private readonly storeRepository: StoreRepository,
   ) {}
+
+  async fetchAllUsers(dto: FetchUsersDto) {
+    return this.userRepository.findAll(
+      dto.page,
+      dto.limit,
+      dto.name,
+      dto.email,
+      dto.roles,
+    );
+  }
 
   async getStoreManagers() {
     return this.userRepository.findByRole(UserRole.STORE_MANAGER);
@@ -26,7 +37,6 @@ export class UserService {
     await this.userRepository.updateStatus(userId, status);
 
     const store = await this.storeRepository.findById(storeId);
-
 
     if (status) {
       await this.mailService.sendActivationEmail(user.email, store?.name);
