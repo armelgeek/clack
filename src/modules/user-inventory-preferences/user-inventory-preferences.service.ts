@@ -55,7 +55,6 @@ export class UserInventoryPreferencesService {
     preferenceData: UpdatePreferencesDto,
   ) {
     try {
-      console.log(preferenceData);
       const user = await this.userRepository.findById(userId);
       if (!user) {
         this.logger.error('User not found');
