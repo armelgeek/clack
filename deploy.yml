@@ -50,6 +50,12 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-production"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"  
     acme.cert-manager.io/http01-edit-in-place: "true"
+    
+    # ✅ Spécifique WebSocket
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/upgrade: "websocket"
+    nginx.ingress.kubernetes.io/connection-proxy-header: "keep-alive"
 spec:
   tls:
     - hosts:
