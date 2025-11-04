@@ -45,6 +45,8 @@ export const auth = betterAuth({
           process.env.REACT_APP_URL_SUPERADMIN || 'http://localhost:5174',
           process.env.REACT_APP_URL_ADMIN || 'http://localhost:5173',
           process.env.REACT_APP_URL_CLIENT || 'http://localhost:5173',
+          process.env.SUPER_ADMIN_APP_URL || 'http://localhost:5174',
+          'http://localhost:5173',
         ],
   user: {
     modelName: 'users',
