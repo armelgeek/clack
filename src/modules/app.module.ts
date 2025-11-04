@@ -21,6 +21,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { CategoryModule } from './category/category.module';
 import { UserInventoryPreferencesModule } from './user-inventory-preferences/user-inventory-preferences.module';
 import { SyncStoreModule } from './sync-store/sync-store.module';
+import { StockAlertModule } from './stock-alert/stock-alert.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { SyncStoreModule } from './sync-store/sync-store.module';
     CategoryModule,
     UserInventoryPreferencesModule,
     SyncStoreModule,
+    StockAlertModule,
   ],
 })
 export class AppModule {}
