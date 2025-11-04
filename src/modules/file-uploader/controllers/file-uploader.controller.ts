@@ -21,9 +21,8 @@ export class FileUploaderController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
-    @UploadedFile() file: MemoryStoredFile
+    @UploadedFile() file: MemoryStoredFile,
   ): Promise<TUploadFileResponse> {
-    console.log(file);
     return this.service.uploadFile(file, `direct-images/${file.originalName}`);
   }
 
