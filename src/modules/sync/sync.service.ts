@@ -18,8 +18,7 @@ export class SyncService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
-  //@Cron('0 */8 * * *')
-  @Cron('* * * * *')
+  @Cron('0 */8 * * *')
   async handleProductSync() {
     this.logger.log('🚀 Lancement de la synchronisation des produits...');
 
