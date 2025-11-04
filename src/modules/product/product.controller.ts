@@ -200,4 +200,29 @@ export class ProductController {
   }> {
     return this.productService.deleteProduct(productId);
   }
+
+    /**
+   * Get the number of products for a specific store.
+   *
+   * @param storeId - The unique identifier of the store (from URL path).
+   * @returns An object containing the count of products for the given store.
+   *
+   * @example
+   * // Request
+   * GET /products/123/count
+   *
+   * // Response
+   * {
+   *   "count": 17
+   * }
+   */
+  @Get(':storeId/count')
+  async getProductCount(@Param('storeId') storeId: string) {
+    return { count: await this.productService.getCountForStore(storeId) };
+  }
+
+  @Get('count/all')
+  async getTotalProductCount() {
+    return { count: await this.productService.getTotalProductCount() };
+  }
 }

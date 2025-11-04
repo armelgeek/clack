@@ -88,7 +88,7 @@ export class StoreRepository {
     return store;
   }
 
-   async findByIdWithStoreUsers(id: string) {
+  async findByIdWithStoreUsers(id: string) {
     const result = await db.query.stores.findFirst({
       where: (s, { eq }) => eq(s.id, id),
       with: {
@@ -101,7 +101,7 @@ export class StoreRepository {
     });
     return result;
   }
-  
+
   async findAllWithAdmins(
     page: number,
     limit: number,
@@ -196,7 +196,4 @@ export class StoreRepository {
       .returning();
     return updatedStores[0];
   }
-
-
-  
 }

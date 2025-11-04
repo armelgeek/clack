@@ -18,7 +18,7 @@ import { ExternalStoreMappingRepository } from '../external-store-mappings/exter
 import { Store } from '@/database';
 import { CreateStoreDto } from './dtos/create-store.dto';
 import { randomUUID } from 'crypto';
-import { UpdateStoreStatusDto } from './dtos/update-store-status.dto';
+import { TStoreAdmin } from 'types/store';
 @Injectable()
 export class StoreService {
   private readonly logger = new Logger(StoreService.name);
@@ -81,6 +81,34 @@ export class StoreService {
     };
   }
 
+
+  async getStoreByIdWithAdmin(id: string): Promise<TStoreAdmin> {
+    const store = await this.storeRepository.findByIdWithStoreUsers(id);
+
+    if (!store) {
+      this.logger.error('Store not found');
+      throw new NotFoundException('Store not found');
+    }
+
+    const { storeUsers, ...rest } = store;
+
+    return {
+      ...rest,
+      latitude: store.latitude !== null ? Number(store.latitude) : null,
+      longitude: store.longitude !== null ? Number(store.longitude) : null,
+      status: store.status as StoreStatus,
+      openingHours: store.openingHours as any,
+      admins: storeUsers.map((su) => ({
+        id: su.user.id,
+        name: su.user.name,
+        email: su.user.email,
+        phoneNumber: su.user.phoneNumber,
+        role: su.user.role,
+        status: su.user.status,
+        createdAt: su.user.createdAt,
+      })),
+    };
+  }
   async updateStoreStatus(
     storeId: string,
     status: StoreStatus,

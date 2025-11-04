@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Put, Query, Post  ,Patch} from '@nestjs/common';
 import { StoreService } from './store.service';
 import { ProductService } from '../product/product.service';
-import { TStore } from 'types/store';
+import { TStore, TStoreAdmin } from 'types/store';
 import { TProduct } from 'types/product';
 import { PaginatedResponse } from 'types/common/pagination';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
@@ -62,6 +62,9 @@ export class StoreController {
     );
   }
 
+
+
+
   @Get(':id')
   @ApiOperation({ summary: 'Get store by id' })
   @ApiParam({ name: 'id', description: 'Store ID' })
@@ -81,6 +84,26 @@ export class StoreController {
   })
   getOne(@Param('id') id: string): Promise<TStore> {
     return this.storeService.getStoreById(id);
+  }
+
+
+  @Get(':id/admin')
+  @ApiOperation({ summary: 'Get store by id' })
+  @ApiResponse({
+    status: 200,
+    description: 'Store fetched successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Store not found',
+    type: null,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error while fetching store',
+  })
+  getOneAdmin(@Param('id') id: string): Promise<TStoreAdmin> {
+    return this.storeService.getStoreByIdWithAdmin(id);
   }
 
   @Get(':id/products')
