@@ -23,8 +23,6 @@ export class ProductRepository {
       where: eq(products.id, id),
       with: {
         store: true,
-        images: {},
-        category: {},
       },
     });
     return result;
@@ -186,6 +184,16 @@ export class ProductRepository {
   }
 
   // Methods for store admin
+  async getProductDetailsById(id: string) {
+    return await db.query.products.findFirst({
+      where: (product, { eq }) => eq(product.id, id),
+      with: {
+        images: {},
+        category: {},
+      },
+    });
+  }
+
   async getOtherProductByName(productName: string) {
     const result = await db
       .select()
