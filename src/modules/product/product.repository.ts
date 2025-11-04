@@ -23,6 +23,8 @@ export class ProductRepository {
       where: eq(products.id, id),
       with: {
         store: true,
+        images: {},
+        category: {},
       },
     });
     return result;
