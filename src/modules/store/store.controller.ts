@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query, Post  ,Patch} from '@nestjs/common';
 import { StoreService } from './store.service';
 import { ProductService } from '../product/product.service';
 import { TStore } from 'types/store';
@@ -14,6 +14,10 @@ import { StoreSearchDto, SearchDto } from '@/common/dto/pagination.dto';
 import { FetchProductsByStoreDto } from '../product/dtos/fetch-products-by-store-id.dto';
 import { BasicListResponse } from 'types/common/response';
 import { UpdateStoreDto } from './dtos/update-store.dto';
+import { CreateStoreDto } from './dtos/create-store.dto';
+import { GetStoresDto } from './dtos/get-store.dto';
+import { Store } from '@/database/schema';
+import { UpdateStoreStatusDto } from './dtos/update-store-status.dto';
 
 @ApiTags('stores')
 @Controller('stores')
@@ -42,6 +46,19 @@ export class StoreController {
       query.limit || 10,
       query.search,
       query.region,
+    );
+  }
+
+  @Get('admins')
+  @ApiOperation({ summary: 'Get paginated list of stores with admins' })
+  @ApiResponse({ status: 200, description: 'Stores fetched successfully' })
+  @ApiResponse({ status: 404, description: 'No stores found', type: null })
+  getStoresWithAdmins(@Query() query: GetStoresDto) {
+    return this.storeService.getStoresWithAdmins(
+      query.page,
+      query.limit,
+      query.search,
+      query.folderId,
     );
   }
 
@@ -137,4 +154,37 @@ export class StoreController {
   }> {
     return this.storeService.updateStore(storeId, dto);
   }
+
+  @Patch(':storeId/status')
+  @ApiOperation({ summary: 'Update store status' })
+  @ApiResponse({
+    status: 200,
+    description: 'Store status updated successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Store not found',
+  })
+  async updateStatus(
+    @Param('storeId') storeId: string,
+    @Body() dto: UpdateStoreStatusDto,
+  ): Promise<Store> {
+    return this.storeService.updateStoreStatus(storeId, dto.status);
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new store' })
+  @ApiResponse({ status: 201, description: 'Store created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid store data' })
+  async create(@Body() dto: CreateStoreDto): Promise<TStore> {
+    const store = await this.storeService.createStore(dto);
+    return {
+      ...store,
+      latitude: Number(store.latitude),
+      longitude: Number(store.longitude),
+      status: store.status as TStore['status'],
+    } as TStore;
+  }
+
+  
 }

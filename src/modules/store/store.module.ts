@@ -6,6 +6,8 @@ import { ProductModule } from '../product/product.module';
 import { StoreStatusGateway } from '../notifications/gateway/store-status.gateway';
 import { NotificationRepository } from '../notifications/notifications.repository';
 import { UserRepository } from '../user/user.repository';
+import { StoreFolderRepository } from '../store-folder/store-folder.repository';
+import { ExternalStoreMappingRepository } from '../external-store-mappings/external-store-mappings.repository';
 
 @Module({
   imports: [ProductModule],
@@ -16,7 +18,9 @@ import { UserRepository } from '../user/user.repository';
     StoreStatusGateway,
     NotificationRepository,
     UserRepository,
+    StoreFolderRepository,
+    ExternalStoreMappingRepository,
   ],
-  exports: [StoreService],
+  exports: [StoreService ,StoreRepository],
 })
 export class StoreModule {}

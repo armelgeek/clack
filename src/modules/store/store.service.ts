@@ -13,7 +13,12 @@ import { NotificationRepository } from '../notifications/notifications.repositor
 import { UserRepository } from '../user/user.repository';
 import { UpdateStoreDto } from './dtos/update-store.dto';
 import { UserRole } from 'types/enums/user';
-
+import { StoreFolderRepository } from '../store-folder/store-folder.repository';
+import { ExternalStoreMappingRepository } from '../external-store-mappings/external-store-mappings.repository';
+import { Store } from '@/database';
+import { CreateStoreDto } from './dtos/create-store.dto';
+import { randomUUID } from 'crypto';
+import { UpdateStoreStatusDto } from './dtos/update-store-status.dto';
 @Injectable()
 export class StoreService {
   private readonly logger = new Logger(StoreService.name);
@@ -23,6 +28,8 @@ export class StoreService {
     private readonly storeStatusGateway: StoreStatusGateway,
     private readonly notificationRepository: NotificationRepository,
     private readonly userRepository: UserRepository,
+    private readonly storeFolderRepository: StoreFolderRepository,
+    private readonly externalStoreMappingRepository: ExternalStoreMappingRepository,
   ) {}
 
   async getStoreById(id: string): Promise<TStore> {
@@ -74,6 +81,19 @@ export class StoreService {
     };
   }
 
+  async updateStoreStatus(
+    storeId: string,
+    status: StoreStatus,
+  ): Promise<Store> {
+    if (!status) {
+      this.logger.error('Invalid status value');
+    }
+    const updatedStore = await this.storeRepository.updateStore(
+      storeId, { status }
+    );
+    return updatedStore;
+  }
+
   async updateStore(storeId: string, data: UpdateStoreDto) {
     const store = await this.getStoreById(storeId);
 
@@ -122,4 +142,74 @@ export class StoreService {
 
     return updatedStore;
   }
+
+  async getStoresWithAdmins(
+    page: number,
+    limit: number,
+    search?: string,
+    folderId?: string,
+  ) {
+    const result = await this.storeRepository.findAllWithAdmins(
+      page,
+      limit,
+      search,
+      folderId,
+    );
+
+    if (result.data.length === 0) {
+      this.logger.warn('No stores found');
+      return {
+        data: [],
+        totalPages: result.totalPages,
+        currentPage: result.currentPage,
+        totalCount: result.totalCount,
+      };
+    }
+
+    return {
+      data: result.data.map((store) => ({
+        id: store.id,
+        name: store.name,
+        isActive: store.isActive,
+        admins: store.admins,
+        adminCount: store.adminCount,
+        createdAt: store.createdAt,
+      })),
+      totalPages: result.totalPages,
+      currentPage: result.currentPage,
+      totalCount: result.totalCount,
+    };
+  }
+
+  async createStore(dto: CreateStoreDto): Promise<Store> {
+    const store = await this.storeRepository.create({
+      id: randomUUID(),
+      ...dto,
+      latitude: dto.latitude !== undefined ? String(dto.latitude) : undefined,
+      longitude:
+        dto.longitude !== undefined ? String(dto.longitude) : undefined,
+    });
+
+    if (dto.externalCompanyId) {
+      await this.externalStoreMappingRepository.create({
+        externalCompanyId: dto.externalCompanyId,
+        storeId: store.id,
+      });
+      this.logger.log(
+        `Mapping created for store ${store.id} and company ${dto.externalCompanyId}`,
+      );
+    }
+
+    if (dto.folderId) {
+      await this.storeFolderRepository.storeToFolder(store.id, dto.folderId);
+      this.logger.log(
+        `Store ${store.id} assigned to folder ${dto.folderId}`,
+      );
+    }
+
+    return store;
+  }
+
+  
 }
+
