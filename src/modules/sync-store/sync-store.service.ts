@@ -33,7 +33,8 @@ export class SyncStoreService {
     }
   }
 
-  @Cron('0 2 * * *') 
+  //@Cron('0 2 * * *') 
+  @Cron('* * * * *')
   async handleStoreSync() {
     this.logger.log('🚀 Starting synchronization of external stores from Nextore...');
 
