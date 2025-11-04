@@ -89,6 +89,27 @@ export class ProductController {
     return this.productService.getProductById(id);
   }
 
+  @Get(':productId/details')
+  @ApiOperation({ summary: 'Get product by id' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product fetched successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+    type: null,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error while fetching product',
+  })
+  getProductDetailsById(
+    @Param('productId') productId: string,
+  ): Promise<TProduct> {
+    return this.productService.getProductDetailsById(productId);
+  }
+
   @Get(':id/similar')
   @ApiOperation({ summary: 'Get similar products' })
   @ApiResponse({
