@@ -22,8 +22,7 @@ export class StockAlertService {
   ) {}
 
   /** This cron job will run every 4 hours */
-  // @Cron('0 0 */4 * * *')
-  @Cron('*/5 * * * *')
+  @Cron('0 0 */4 * * *')
   async handleStockAlertCron() {
     const targetUsersAndStores =
       await this.userInventoryPreferencesRepository.getTargetUsersForStockAlert();
