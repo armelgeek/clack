@@ -11,15 +11,15 @@ import { MailService } from '../mail/mail.service';
 
 export const APP_CONFIG = {
   CUSTOMER_APP: {
-    url: process.env.REACT_APP_URL_CLIENT || 'https://staging.clicknvape.fr',
+    url: 'https://staging.clicknvape.fr',
     roles: [UserRole.CUSTOMER],
   },
   ADMIN_APP: {
-    url: process.env.REACT_APP_URL_ADMIN || 'https://staging.store.clicknvape.fr',
+    url:  'https://staging.store.clicknvape.fr',
     roles: [UserRole.PARTNER, UserRole.STORE_MANAGER, UserRole.SALES_ADVISOR],
   },
   SUPER_ADMIN_APP: {
-    url: process.env.REACT_APP_URL_SUPERADMIN || 'https://staging.admin.clicknvape.fr',
+    url: 'https://staging.admin.clicknvape.fr',
     roles: [UserRole.SUPER_ADMIN],
   },
 } as const;
@@ -131,7 +131,37 @@ export const auth = betterAuth({
       if (ctx.path.startsWith('/get-session')) {
         const origin = ctx.getHeader('Origin') || ctx.getHeader('Referer') || '';
         const session = ctx.context.newSession;
-        
+
+        const detectedApp = Object.entries(APP_CONFIG).find(([_, config]) =>
+          origin.includes(new URL(config.url).hostname),
+        )?.[0];
+
+        if (session && detectedApp) {
+          // Ajoute le champ custom à la session pour usage ultérieur
+          ctx.context.detectedApp = detectedApp;
+        }
+
+        if (!session) {
+          return;
+        }
+        const user = session.user;
+        if (detectedApp && !APP_CONFIG[detectedApp].roles.includes(user.role)) {
+          await auth.api.signOut({ headers: ctx.request.headers }); // Invalidate session
+          return new Response(
+            JSON.stringify({ message: 'Session invalidated' }),
+            {
+              status: 200,
+            },
+          );
+        }
+      }
+    }),
+    after: createAuthMiddleware(async (ctx) => {
+      // 🎯 Restrict roles per app
+       if (ctx.path.startsWith('/get-session')) {
+        const origin = ctx.getHeader('Origin') || ctx.getHeader('Referer') || '';
+        const session = ctx.context.newSession;
+
         const detectedApp = Object.entries(APP_CONFIG).find(([_, config]) =>
           origin.includes(new URL(config.url).hostname),
         )?.[0];
@@ -151,9 +181,7 @@ export const auth = betterAuth({
         }
       }
 
-    }),
-    after: createAuthMiddleware(async (ctx) => {
-      // 🎯 Restrict roles per app
+
       if (ctx.path.startsWith('/sign-in/email')) {
         const app = ctx.getHeader('X-APP');
         const session = ctx.context.newSession;
