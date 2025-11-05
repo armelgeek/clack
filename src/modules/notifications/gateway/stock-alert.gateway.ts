@@ -39,7 +39,6 @@ export class StockAlertGateway
   @SubscribeMessage('joinRoom')
   handleJoinRoom(client: Socket, userId: string) {
     client.join(userId);
-    console.log(`Client ${client.id} joined notification room: ${userId}`);
   }
 
   notifyOutOfStockProduct(notification: TNotification) {
