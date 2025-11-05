@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 import { Response } from 'express';
 import { auth } from './modules/auth/auth.service';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { SocketIoAdapter } from './common/adapters/socket-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -99,6 +100,8 @@ async function bootstrap() {
   );
 
   app.use(cookieParser());
+
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
 
   app.enableCors({
     origin: true,
