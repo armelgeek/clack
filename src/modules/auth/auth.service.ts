@@ -131,9 +131,7 @@ export const auth = betterAuth({
       if (ctx.path.startsWith('/get-session')) {
         const origin = ctx.getHeader('Origin') || ctx.getHeader('Referer') || '';
         const session = ctx.context.newSession;
-        console.log('Origin:', origin);
-        console.log('Session:', session);
-
+        
         const detectedApp = Object.entries(APP_CONFIG).find(([_, config]) =>
           origin.includes(new URL(config.url).hostname),
         )?.[0];
@@ -141,13 +139,18 @@ export const auth = betterAuth({
         if (!session) {
           return;
         }
-        const user = session.user
-
-        console.log('detectedApp:', detectedApp, user);
-
-
-        // 🎯 Restrict roles per app
+        const user = session.user;
+        if (detectedApp && !APP_CONFIG[detectedApp].roles.includes(user.role)) {
+          await auth.api.signOut({ headers: ctx.request.headers }); // Invalidate session
+          return new Response(
+            JSON.stringify({ message: 'Session invalidated' }),
+            {
+              status: 200,
+            },
+          );
+        }
       }
+
     }),
     after: createAuthMiddleware(async (ctx) => {
       // 🎯 Restrict roles per app
