@@ -111,6 +111,14 @@ export const auth = betterAuth({
   },
 
   hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith('/get-session')) {
+          const origin = ctx.getHeader('Origin') || ctx.getHeader('Referer') || '';
+          const session = ctx.context.session;
+          console.log('Origin:', origin);
+          console.log('Session:', session);
+      }
+    }),
     after: createAuthMiddleware(async (ctx) => {
       // 🎯 Restrict roles per app
       if (ctx.path.startsWith('/sign-in/email')) {
