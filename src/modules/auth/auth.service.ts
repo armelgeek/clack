@@ -131,18 +131,16 @@ export const auth = betterAuth({
       // 🎯 Restrict roles per app
        if (ctx.path.startsWith('/get-session')) {
         const origin = ctx.getHeader('Origin') || ctx.getHeader('Referer') || '';
-        const session = ctx.context.newSession;
-
+        const session = ctx.context.session;
         const detectedApp = Object.entries(APP_CONFIG).find(([_, config]) =>
           origin.includes(new URL(config.url).hostname),
         )?.[0];
-
+        ctx.context.detectedApp = detectedApp;
         if (!session) {
           return;
         }
 
         const user = session.user;
-        ctx.context.detectedApp = detectedApp;
         if (detectedApp && !APP_CONFIG[detectedApp].roles.includes(user.role)) {
           await auth.api.signOut({ headers: ctx.request.headers }); // Invalidate session
           return new Response(
@@ -158,6 +156,9 @@ export const auth = betterAuth({
       if (ctx.path.startsWith('/sign-in/email')) {
         const app = ctx.getHeader('X-APP');
         const session = ctx.context.newSession;
+         if (!session) {
+          return;
+        }
         const user = session.user;
 
 
