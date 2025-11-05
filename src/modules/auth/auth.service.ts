@@ -143,13 +143,13 @@ export const auth = betterAuth({
         const user = session.user;
         if (detectedApp && !APP_CONFIG[detectedApp].roles.includes(user.role)) {
           await auth.api.signOut({ headers: ctx.request.headers }); // Invalidate session
-          return new Response(
+           return new Response(
             JSON.stringify({
-              user: null,
-              session: null,
+              code: ErrorType.NOT_ALLOWED,
+              message: 'Your role is not allowed to access this app',
             }),
             {
-              status: 200,
+              status: 403,
             },
           );
         }
