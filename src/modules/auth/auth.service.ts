@@ -140,7 +140,9 @@ export const auth = betterAuth({
         if (!session) {
           return;
         }
+
         const user = session.user;
+        ctx.context.detectedApp = detectedApp;
         if (detectedApp && !APP_CONFIG[detectedApp].roles.includes(user.role)) {
           await auth.api.signOut({ headers: ctx.request.headers }); // Invalidate session
           return new Response(
