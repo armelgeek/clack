@@ -15,7 +15,7 @@ import { TNotification } from 'types/notification';
     origin: [process.env.REACT_APP_URL_ADMIN || 'http://localhost:5173'],
     credentials: true,
   },
-  namespace: '/admin-notifications',
+  // namespace: '/admin-notifications',
 })
 export class StockAlertGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
