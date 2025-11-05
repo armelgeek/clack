@@ -72,3 +72,19 @@ spec:
                 name: clicknvape-backend
                 port:
                   number: 3000
+          # Path pour le namespace admin-notifications (WebSocket)
+          - path: /admin-notifications(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: clicknvape-backend
+                port:
+                  number: 3000
+          # Path pour le namespace super-admin-notifications (WebSocket)
+          - path: /super-admin-notifications(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: clicknvape-backend
+                port:
+                  number: 3000
