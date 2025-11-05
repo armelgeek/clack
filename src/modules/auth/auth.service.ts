@@ -8,6 +8,22 @@ import { ErrorType } from 'types/common/error';
 import { UserRole } from 'types/enums/user';
 import { MailService } from '../mail/mail.service';
 
+
+export const APP_CONFIG = {
+  CUSTOMER_APP: {
+    url: process.env.REACT_APP_URL_CLIENT || 'https://staging.clicknvape.fr',
+    roles: [UserRole.CUSTOMER],
+  },
+  ADMIN_APP: {
+    url: process.env.REACT_APP_URL_ADMIN || 'https://staging.store.clicknvape.fr',
+    roles: [UserRole.PARTNER, UserRole.STORE_MANAGER, UserRole.SALES_ADVISOR],
+  },
+  SUPER_ADMIN_APP: {
+    url: process.env.REACT_APP_URL_SUPERADMIN || 'https://staging.admin.clicknvape.fr',
+    roles: [UserRole.SUPER_ADMIN],
+  },
+} as const;
+
 const mailServiceInstance = new MailService();
 
 // ✅ Helper to determine cookie name and prefix
@@ -43,17 +59,17 @@ export const auth = betterAuth({
   trustedOrigins:
     process.env.NODE_ENV === 'production'
       ? [
-          process.env.REACT_APP_URL_SUPERADMIN!,
-          process.env.REACT_APP_URL_ADMIN!,
-          process.env.REACT_APP_URL_CLIENT!,
-        ].filter(Boolean)
+        process.env.REACT_APP_URL_SUPERADMIN!,
+        process.env.REACT_APP_URL_ADMIN!,
+        process.env.REACT_APP_URL_CLIENT!,
+      ].filter(Boolean)
       : [
-          process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-          process.env.REACT_APP_URL_SUPERADMIN || 'http://localhost:5174',
-          process.env.REACT_APP_URL_ADMIN || 'http://localhost:5173',
-          process.env.REACT_APP_URL_CLIENT || 'http://localhost:5173',
-          'http://localhost:5173',
-        ],
+        process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+        process.env.REACT_APP_URL_SUPERADMIN || 'http://localhost:5174',
+        process.env.REACT_APP_URL_ADMIN || 'http://localhost:5173',
+        process.env.REACT_APP_URL_CLIENT || 'http://localhost:5173',
+        'http://localhost:5173',
+      ],
 
   user: {
     modelName: 'users',
@@ -104,19 +120,33 @@ export const auth = betterAuth({
     crossSubDomainCookies:
       process.env.NODE_ENV === 'production'
         ? {
-            enabled: true,
-            domain: '.clicknvape.fr', // 👈 shared cookie for all subdomains
-          }
+          enabled: true,
+          domain: '.clicknvape.fr', // 👈 shared cookie for all subdomains
+        }
         : undefined,
   },
 
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path.startsWith('/get-session')) {
-          const origin = ctx.getHeader('Origin') || ctx.getHeader('Referer') || '';
-          const session = ctx.context.session;
-          console.log('Origin:', origin);
-          console.log('Session:', session);
+        const origin = ctx.getHeader('Origin') || ctx.getHeader('Referer') || '';
+        const session = ctx.context.newSession;
+        console.log('Origin:', origin);
+        console.log('Session:', session);
+
+        const detectedApp = Object.entries(APP_CONFIG).find(([_, config]) =>
+          origin.includes(new URL(config.url).hostname),
+        )?.[0];
+
+        if (!session) {
+          return;
+        }
+        const user = session.user
+
+        console.log('detectedApp:', detectedApp, user);
+
+
+        // 🎯 Restrict roles per app
       }
     }),
     after: createAuthMiddleware(async (ctx) => {
@@ -125,6 +155,7 @@ export const auth = betterAuth({
         const app = ctx.getHeader('X-APP');
         const session = ctx.context.newSession;
         const user = session.user;
+
 
         const allowedRoles: Record<string, UserRole[]> = {
           CUSTOMER_APP: [UserRole.CUSTOMER],
@@ -140,9 +171,8 @@ export const auth = betterAuth({
 
           // ❌ Clear cookie (with subdomain-safe domain)
           const cookieName = getCookieName(app);
-          const cookieHeader = `${cookieName}=; Path=/; ${
-            process.env.NODE_ENV === 'production' ? 'Domain=.clicknvape.fr;' : ''
-          } Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax;`;
+          const cookieHeader = `${cookieName}=; Path=/; ${process.env.NODE_ENV === 'production' ? 'Domain=.clicknvape.fr;' : ''
+            } Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax;`;
 
           return new Response(
             JSON.stringify({
