@@ -10,84 +10,73 @@ import { MailService } from '../mail/mail.service';
 
 const mailServiceInstance = new MailService();
 
+// ✅ Helper to determine cookie name and prefix
+const getCookieName = (app?: string): string => {
+  const prefix = process.env.AUTH_COOKIE_PREFIX || 'clicknvape_app';
+  return `${prefix}_${app || 'default'}_session`;
+};
+
 export const auth = betterAuth({
   plugins: [openAPI(), twoFactor()],
-  database: drizzleAdapter(db, {
-    provider: 'pg',
-    schema,
-  }),
+
+  database: drizzleAdapter(db, { provider: 'pg', schema }),
+
   socialProviders: {
     google: {
       prompt: 'select_account consent',
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       accessType: 'offline',
     },
     facebook: {
-      clientId: process.env.FACEBOOK_CLIENT_ID as string,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
     },
     twitter: {
-      clientId: process.env.TWITTER_CLIENT_ID as string,
-      clientSecret: process.env.TWITTER_CLIENT_SECRET as string,
+      clientId: process.env.TWITTER_CLIENT_ID!,
+      clientSecret: process.env.TWITTER_CLIENT_SECRET!,
     },
   },
+
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+
   trustedOrigins:
     process.env.NODE_ENV === 'production'
       ? [
-          process.env.REACT_APP_URL_SUPERADMIN || 'http://localhost:5173',
-          process.env.REACT_APP_URL_ADMIN || 'http://localhost:5174',
-          process.env.REACT_APP_URL_CLIENT || 'http://localhost:5173',
-        ]
+          process.env.REACT_APP_URL_SUPERADMIN!,
+          process.env.REACT_APP_URL_ADMIN!,
+          process.env.REACT_APP_URL_CLIENT!,
+        ].filter(Boolean)
       : [
           process.env.BETTER_AUTH_URL || 'http://localhost:3000',
           process.env.REACT_APP_URL_SUPERADMIN || 'http://localhost:5174',
           process.env.REACT_APP_URL_ADMIN || 'http://localhost:5173',
           process.env.REACT_APP_URL_CLIENT || 'http://localhost:5173',
-          process.env.SUPER_ADMIN_APP_URL || 'http://localhost:5174',
           'http://localhost:5173',
         ],
+
   user: {
     modelName: 'users',
     additionalFields: {
-      role: {
-        type: 'string',
-        defaultValue: 'customer',
-        returned: true,
-        optional: true,
-      },
-      phoneNumber: {
-        type: 'string',
-        defaultValue: null,
-        returned: true,
-        optional: true,
-      },
-      birthday: {
-        type: 'string',
-        defaultValue: null,
-        returned: true,
-        optional: true,
-      },
+      role: { type: 'string', defaultValue: 'customer', returned: true, optional: true },
+      phoneNumber: { type: 'string', defaultValue: null, returned: true, optional: true },
+      birthday: { type: 'string', defaultValue: null, returned: true, optional: true },
     },
-    deleteUser: {
-      enabled: true,
-    },
+    deleteUser: { enabled: true },
   },
+
   session: {
     modelName: 'sessions',
-    expiresIn: 15 * 60, // 15 minutes
-    updateAge: 5 * 60, // 5 minutes
+    expiresIn: 15 * 60, // 15 min
+    updateAge: 5 * 60, // 5 min
     additionalFields: {
       impersonatedBy: { type: 'string', defaultValue: null, returned: true },
     },
   },
-  account: {
-    modelName: 'accounts',
-  },
-  verification: {
-    modelName: 'verifications',
-  },
+
+  account: { modelName: 'accounts' },
+  verification: { modelName: 'verifications' },
+
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
@@ -97,107 +86,88 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, token }) => {
       const resetUrl = `${process.env.REACT_APP_URL_SUPERADMIN}/reset-password?token=${token}`;
 
-      // Use schema.* references to avoid cross-module drizzle type mismatches
       const storeData = await db.query.storeUsers.findFirst({
         where: eq(schema.storeUsers.userId, user.id),
         with: { store: true },
       });
 
       const storeName = storeData?.store?.name || 'VAPOSTORE';
-
-      await mailServiceInstance.sendResetPasswordEmail(
-        user.email,
-        storeName,
-        resetUrl,
-      );
+      await mailServiceInstance.sendResetPasswordEmail(user.email, storeName, resetUrl);
     },
   },
+
+  /**
+   * ✅ Advanced cookie setup for subdomain sharing
+   */
   advanced: {
     cookiePrefix: process.env.AUTH_COOKIE_PREFIX || 'clicknvape_app',
+    crossSubDomainCookies:
+      process.env.NODE_ENV === 'production'
+        ? {
+            enabled: true,
+            domain: '.clicknvape.fr', // 👈 shared cookie for all subdomains
+          }
+        : undefined,
   },
+
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
-      // Check if the user is allowed to access the app
+      // 🎯 Restrict roles per app
       if (ctx.path.startsWith('/sign-in/email')) {
         const app = ctx.getHeader('X-APP');
         const session = ctx.context.newSession;
         const user = session.user;
 
-        const isVapostoreUser = user.email.endsWith('@vapostore.com');
-
-        if (isVapostoreUser) {
-          return;
-        }
-
-        // Define allowed roles per app
         const allowedRoles: Record<string, UserRole[]> = {
           CUSTOMER_APP: [UserRole.CUSTOMER],
-          ADMIN_APP: [
-            UserRole.PARTNER,
-            UserRole.STORE_MANAGER,
-            UserRole.SALES_ADVISOR,
-          ],
+          ADMIN_APP: [UserRole.PARTNER, UserRole.STORE_MANAGER, UserRole.SALES_ADVISOR],
           SUPER_ADMIN_APP: [UserRole.SUPER_ADMIN],
         };
 
-        // Check if app header is provided and validate role
-        if (app && allowedRoles[app]) {
-          if (!allowedRoles[app].includes(user.role)) {
-            // Delete session if role not allowed
-            if (session && session.session.id) {
-              // Use schema.sessions to avoid duplicate symbol import issues
-              await db
-                .delete(schema.sessions)
-                .where(eq(schema.sessions.id, session.session.id));
-            }
-
-            const cookieName = `${process.env.AUTH_COOKIE_PREFIX || 'clicknvape_app'}-session`;
-            const cookieHeader = `${cookieName}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax;`;
-
-            return new Response(
-              JSON.stringify({
-                code: ErrorType.NOT_ALLOWED,
-                message: 'Your role is not allowed to access this app',
-              }),
-              {
-                status: 403,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Set-Cookie': cookieHeader,
-                },
-              },
-            );
+        if (app && allowedRoles[app] && !allowedRoles[app].includes(user.role)) {
+          // Delete session from DB
+          if (session && session.session.id) {
+            await db.delete(schema.sessions).where(eq(schema.sessions.id, session.session.id));
           }
+
+          // ❌ Clear cookie (with subdomain-safe domain)
+          const cookieName = getCookieName(app);
+          const cookieHeader = `${cookieName}=; Path=/; ${
+            process.env.NODE_ENV === 'production' ? 'Domain=.clicknvape.fr;' : ''
+          } Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax;`;
+
+          return new Response(
+            JSON.stringify({
+              code: ErrorType.NOT_ALLOWED,
+              message: 'Your role is not allowed to access this app',
+            }),
+            {
+              status: 403,
+              headers: {
+                'Content-Type': 'application/json',
+                'Set-Cookie': cookieHeader,
+              },
+            },
+          );
         }
       }
 
-      // Send confirmation email after changing the password
+      // 🔐 Send confirmation email after password change
       if (ctx.path.startsWith('/change-password')) {
-        const sessionResult = await auth.api.getSession({
-          headers: ctx.request.headers,
-        });
-
+        const sessionResult = await auth.api.getSession({ headers: ctx.request.headers });
         const user = sessionResult?.user;
-
-        if (user && user.email) {
+        if (user?.email) {
           try {
-            // Use schema.* references to avoid cross-module drizzle type mismatches
             const storeData = await db.query.storeUsers.findFirst({
               where: eq(schema.storeUsers.userId, user.id),
               with: { store: true },
             });
 
             if (storeData?.store?.name) {
-              await mailServiceInstance.sendPasswordUpdateEmail(
-                user.email,
-                storeData.store.name,
-              );
+              await mailServiceInstance.sendPasswordUpdateEmail(user.email, storeData.store.name);
             }
           } catch (error) {
-            console.error(
-              'Erreur dans le hook après changement de mot de passe:',
-              error,
-            );
+            console.error('Erreur dans le hook après changement de mot de passe:', error);
           }
         }
       }
