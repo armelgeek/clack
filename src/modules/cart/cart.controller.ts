@@ -14,6 +14,7 @@ import { AddCartItemDto } from './dtos/add-cart-item.dto';
 import { UpdateCartItemDto } from './dtos/update-cart-item.dto';
 import { SelectAllDto } from './dtos/select-all.dto';
 import { EstimateShippingDto } from './dtos/estimate-shipping.dto';
+import { auth } from '../auth/auth.service';
 
 @ApiTags('cart')
 @Controller('cart')
@@ -92,7 +93,7 @@ export class CartController {
     description: 'Cart cleared successfully',
   })
   async clearCart(@Req() req: any) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
+    const userId = req.user?.id;
     return this.cartService.clearCart(userId);
   }
 
@@ -103,8 +104,8 @@ export class CartController {
     description: 'Selection updated successfully',
   })
   async selectAll(@Req() req: any, @Body() dto: SelectAllDto) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
-    return this.cartService.selectAll(userId, dto.isSelected);
+    const sessionResult = await auth.api.getSession({ headers: req.headers });
+    return this.cartService.selectAll(sessionResult.user.id, dto.isSelected);
   }
 
   @Post('estimate-shipping')
@@ -114,7 +115,8 @@ export class CartController {
     description: 'Shipping estimated successfully',
   })
   async estimateShipping(@Req() req: any, @Body() dto: EstimateShippingDto) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
+    const sessionResult = await auth.api.getSession({ headers: req.headers });
+    const userId = sessionResult.user.id;
     return this.cartService.estimateShipping(userId, dto.addressId);
   }
 
@@ -125,7 +127,8 @@ export class CartController {
     description: 'Cart saved successfully',
   })
   async saveCart(@Req() req: any) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
+    const sessionResult = await auth.api.getSession({ headers: req.headers });
+    const userId = sessionResult.user.id;
     return this.cartService.saveCart(userId);
   }
 
@@ -136,7 +139,8 @@ export class CartController {
     description: 'Saved carts retrieved successfully',
   })
   async getSavedCarts(@Req() req: any) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
+    const sessionResult = await auth.api.getSession({ headers: req.headers });
+    const userId = sessionResult.user.id;
     return this.cartService.getSavedCarts(userId);
   }
 
@@ -147,7 +151,8 @@ export class CartController {
     description: 'Stock validation completed',
   })
   async validateStock(@Req() req: any) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
+    const sessionResult = await auth.api.getSession({ headers: req.headers });
+    const userId = sessionResult.user.id; 
     return this.cartService.validateCartStock(userId);
   }
 }
