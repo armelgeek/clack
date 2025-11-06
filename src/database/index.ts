@@ -16,6 +16,8 @@ export {
   storeFolders,
   headBand,
   notifications,
+  carts,
+  cartItems,
   type Store,
   type NewStore,
   type User,
@@ -28,4 +30,8 @@ export {
   type NewStoreFolder,
   type HeadBand,
   type NewHeadBand,
+  type Cart,
+  type NewCart,
+  type CartItem,
+  type NewCartItem
 } from './schema';
