@@ -22,6 +22,7 @@ import { CategoryModule } from './category/category.module';
 import { UserInventoryPreferencesModule } from './user-inventory-preferences/user-inventory-preferences.module';
 import { SyncStoreModule } from './sync-store/sync-store.module';
 import { StockAlertModule } from './stock-alert/stock-alert.module';
+import { CartModule } from './cart/cart.module';
 import { SearchModule } from './search/search.module';
 
 @Module({
@@ -56,6 +57,7 @@ import { SearchModule } from './search/search.module';
     UserInventoryPreferencesModule,
     SyncStoreModule,
     StockAlertModule,
+    CartModule,
     SearchModule,
   ],
 })

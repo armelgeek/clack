@@ -28,6 +28,17 @@ export class ProductRepository {
     return result;
   }
 
+  async findByIdAndStore(productId: string, storeId: string) {
+    const result = await db.query.products.findFirst({
+      where: and(eq(products.id, productId), eq(products.storeId, storeId)),
+      with: {
+        store: true,
+        images: true,
+      },
+    });
+    return result;
+  }
+
   async findAll(
     page: number = 1,
     limit: number = 10,

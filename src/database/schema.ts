@@ -205,6 +205,30 @@ export const headBand = pgTable('head_bands', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+export const carts = pgTable('carts', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  status: text('status').notNull().default('active'), // active, saved, merged
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const cartItems = pgTable('cart_items', {
+  id: text('id').primaryKey(),
+  cartId: text('cart_id')
+    .notNull()
+    .references(() => carts.id, { onDelete: 'cascade' }),
+  productId: text('product_id').notNull(),
+  storeId: text('store_id').notNull(),
+  quantity: numeric('quantity').notNull().$type<number>(),
+  isSelected: boolean('is_selected').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Relations
 export const storeUsersRelations = relations(storeUsers, ({ one }) => ({
   store: one(stores, {
@@ -277,6 +301,23 @@ export const storeFoldersRelations = relations(
   }),
 );
 
+export const cartsRelations = relations(carts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [carts.userId],
+    references: [users.id],
+  }),
+  items: many(cartItems),
+}));
+
+export const cartItemsRelations = relations(cartItems, ({ one }) => ({
+  cart: one(carts, {
+    fields: [cartItems.cartId],
+    references: [carts.id],
+  }),
+}));
+
+
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
@@ -291,3 +332,8 @@ export type NewStoreFolder = typeof storeFolders.$inferInsert;
 
 export type HeadBand = typeof headBand.$inferSelect;
 export type NewHeadBand = typeof headBand.$inferInsert;
+
+export type Cart = typeof carts.$inferSelect;
+export type NewCart = typeof carts.$inferInsert;
+export type CartItem = typeof cartItems.$inferSelect;
+export type NewCartItem = typeof cartItems.$inferInsert;
