@@ -23,4 +23,4 @@ RUN npm install --force --prefix ./mobile-app-backend
 EXPOSE 3000
 
 # Lancer
-CMD ["sh", "-c", "cd mobile-app-backend/ && npm run dev --host 0.0.0.0"]
+CMD ["sh", "-c", "cd mobile-app-backend/  && npm run db:generate && npm run db:push && npm run dev --host 0.0.0.0"]
