@@ -56,7 +56,7 @@ export const categories = pgTable('categories', {
 export const products = pgTable(
   'products',
   {
-    id: text('id').notNull(),
+    id: text('id').notNull().unique(),
     storeId: text('store_id')
       .notNull()
       .references(() => stores.id),
@@ -87,6 +87,24 @@ export const productImages = pgTable(
     url: text('url').notNull(),
     filename: text('filename').notNull(),
     objectKey: text('object_key').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    productsFk: foreignKey({
+      columns: [table.productId, table.storeId],
+      foreignColumns: [products.id, products.storeId],
+    }).onDelete('cascade'),
+  }),
+);
+
+export const stockMovements = pgTable(
+  'stock_movements',
+  {
+    id: text('id').notNull().primaryKey(),
+    productId: text('product_id').notNull(),
+    storeId: text('store_id').notNull(),
+    type: text('type').notNull(), // IN / OUT
+    quantity: numeric('quantity').notNull().$type<number>(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
@@ -260,6 +278,13 @@ export const productImagesRelations = relations(productImages, ({ one }) => ({
   }),
 }));
 
+export const stockMovementsRelations = relations(stockMovements, ({ one }) => ({
+  product: one(products, {
+    fields: [stockMovements.productId],
+    references: [products.id],
+  }),
+}));
+
 export const userInventoryPreferencesRelations = relations(
   userInventoryPreferences,
   ({ one }) => ({
@@ -315,8 +340,6 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
     references: [carts.id],
   }),
 }));
-
-
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

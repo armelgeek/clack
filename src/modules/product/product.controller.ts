@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { TProduct } from 'types/product';
+import { TProduct, TStockMovement } from 'types/product';
 import { PaginatedResponse } from 'types/common/pagination';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -21,6 +21,7 @@ import { CreateProductDto } from './dtos/create-product.dto';
 import { FormDataRequest } from 'nestjs-form-data';
 import { UpdateProductStatusDto } from './dtos/update-product-status.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
+import { CreateStockMovementDto } from './dtos/create-stock-movement.dto';
 
 @ApiTags('products')
 @Controller('products')
@@ -68,6 +69,29 @@ export class ProductController {
       query.search,
       query.category,
     );
+  }
+
+  @Post(':productId/stock-movement')
+  @FormDataRequest()
+  @ApiOperation({
+    summary: 'Create product stock movement',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product stock movement created successfully',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error while creating product stock movement',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
+  async createProductStockMovement(
+    @Body() dto: CreateStockMovementDto,
+  ): Promise<TStockMovement> {
+    return await this.productService.createStockMovement(dto);
   }
 
   @Get(':id')
@@ -127,6 +151,46 @@ export class ProductController {
   })
   getSimilar(@Param('id') id: string): Promise<TProduct[]> {
     return this.productService.getSimilarProducts(id);
+  }
+
+  @Get(':productId/stock-movements')
+  @ApiOperation({ summary: 'Get stock movements by product id' })
+  @ApiResponse({
+    status: 200,
+    description: 'Stock movements fetched successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+    type: null,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error while fetching stock movements',
+  })
+  getStockMovementsByProductId(
+    @Param('productId') productId: string,
+  ): Promise<TStockMovement[]> {
+    return this.productService.getStockMovementsByProductId(productId);
+  }
+
+  @Get(':productId/stock')
+  @ApiOperation({ summary: 'Get product available stock' })
+  @ApiResponse({
+    status: 200,
+    description: 'Stock fetched successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+    type: null,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error while fetching stock',
+  })
+  getAvailableStock(@Param('productId') productId: string): Promise<number> {
+    return this.productService.getAvailableStockByProductId(productId);
   }
 
   @Put(':productId/status')
@@ -222,7 +286,7 @@ export class ProductController {
     return this.productService.deleteProduct(productId);
   }
 
-    /**
+  /**
    * Get the number of products for a specific store.
    *
    * @param storeId - The unique identifier of the store (from URL path).
