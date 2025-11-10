@@ -1,4 +1,8 @@
-import { ProductOwner, ProductStatus } from './enums/product';
+import {
+  ProductOwner,
+  ProductStatus,
+  StockMovementType,
+} from './enums/product';
 
 export type TClientProduct = {
   id: string;
@@ -25,4 +29,13 @@ export type TProduct = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
+};
+
+export type TStockMovement = {
+  id: string;
+  productId: string;
+  storeId: string;
+  type: StockMovementType | string;
+  quantity: number;
+  createdAt: Date;
 };

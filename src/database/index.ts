@@ -10,6 +10,7 @@ export {
   categories,
   products,
   productImages,
+  stockMovements,
   userInventoryPreferences,
   twoFactor,
   externalStoreMappings,
@@ -33,5 +34,5 @@ export {
   type Cart,
   type NewCart,
   type CartItem,
-  type NewCartItem
+  type NewCartItem,
 } from './schema';

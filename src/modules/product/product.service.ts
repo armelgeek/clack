@@ -20,7 +20,7 @@ import { FetchProductsByCategoryDto } from './dtos/fetch-products-by-category.dt
 import { BasicListResponse } from 'types/common/response';
 import { generateBasicAuthToken } from 'utils/auth';
 import { FetchProductsByStoreDto } from './dtos/fetch-products-by-store-id.dto';
-import { ProductStatus } from 'types/enums/product';
+import { ProductStatus, StockMovementType } from 'types/enums/product';
 import { MemoryStoredFile } from 'nestjs-form-data';
 import { v4 as uuidv4 } from 'uuid';
 import { FileUploaderService } from '../file-uploader/services/file-uploader.service';
@@ -29,6 +29,7 @@ import {
   CreateProductImageData,
 } from './dtos/create-product.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
+import { CreateStockMovementDto } from './dtos/create-stock-movement.dto';
 
 export interface UploadedFileResponse {
   url: string;
@@ -62,6 +63,28 @@ export class ProductService {
       this.nextoreApiUrl = nextoreApi.url;
       this.basicAuthToken = generateBasicAuthToken(username, password);
     }
+  }
+
+  async getAvailableStockByProductId(productId: string) {
+    const product = await this.productRepository.getProductById(productId);
+
+    if (!product) {
+      this.logger.error('Product not found');
+      throw new NotFoundException('Product not found');
+    }
+
+    // Available stock for other products (product.owner === 'OTHER')
+    return this.productRepository.getAvailableStock(productId);
+  }
+
+  private async injectAvailableStock(product: TProduct): Promise<TProduct> {
+    const productId = product.id;
+    const availableStock = await this.getAvailableStockByProductId(productId);
+
+    return {
+      ...product,
+      quantity: availableStock,
+    };
   }
 
   async getProductById(id: string): Promise<TProduct> {
@@ -248,7 +271,7 @@ export class ProductService {
       throw new NotFoundException('Product not found');
     }
 
-    return product;
+    return this.injectAvailableStock(product);
   }
 
   async fetchFilteredProductsByStoreId(
@@ -266,6 +289,10 @@ export class ProductService {
           storeId,
           params,
         );
+
+      // const productsWithStock = await Promise.all(
+      //   allProducts.map((p) => this.injectAvailableStock(p)),
+      // );
 
       return {
         data: allProducts,
@@ -350,6 +377,16 @@ export class ProductService {
       uploadedUrls,
     );
 
+    // Add the initial quantity to the stock movement table
+    if (newProduct) {
+      await this.productRepository.createStockMovement({
+        productId: newProduct.id,
+        storeId: newProduct.storeId,
+        type: StockMovementType.IN,
+        quantity: newProduct.quantity,
+      });
+    }
+
     return newProduct;
   }
 
@@ -431,5 +468,21 @@ export class ProductService {
     );
 
     return updatedProduct;
+  }
+
+  // Stock movements methods
+  async createStockMovement(stockMovementData: CreateStockMovementDto) {
+    return this.productRepository.createStockMovement(stockMovementData);
+  }
+
+  async getStockMovementsByProductId(productId: string) {
+    const product = await this.productRepository.getProductById(productId);
+
+    if (!product) {
+      this.logger.error('Product not found');
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.productRepository.getStockMovementsByProductId(productId);
   }
 }

@@ -1,7 +1,7 @@
 import { db } from '@/database/connection';
 import { Injectable } from '@nestjs/common';
 import { and, eq, ilike, or, sql, isNull, lte, desc, count } from 'drizzle-orm';
-import { productImages, products } from '@/database';
+import { productImages, products, stockMovements } from '@/database';
 import {
   CreateProductDto,
   CreateProductImageData,
@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { FetchProductsByStoreDto } from './dtos/fetch-products-by-store-id.dto';
 import { ProductOwner, ProductStatus } from 'types/enums/product';
 import { UpdateProductDto } from './dtos/update-product.dto';
+import { CreateStockMovementDto } from './dtos/create-stock-movement.dto';
 
 export interface UpdateProductImagesData {
   imagesToKeepUrls: string[];
@@ -434,5 +435,59 @@ export class ProductRepository {
       .where(eq(products.id, productId))
       .returning();
     return updatedProducts[0];
+  }
+
+  // Stock movement
+  async createStockMovement(stockMovementData: CreateStockMovementDto) {
+    const result = await db
+      .insert(stockMovements)
+      .values({
+        ...stockMovementData,
+        id: uuidv4(),
+      })
+      .returning();
+
+    return result[0];
+  }
+
+  // Get all stock movement for a product
+  async getStockMovementsByProductId(productId: string) {
+    const movements = await db
+      .select()
+      .from(stockMovements)
+      .where(eq(stockMovements.productId, productId))
+      .orderBy(desc(stockMovements.createdAt))
+      .execute();
+    return movements;
+  }
+
+  // Get available stock for other products
+  async getAvailableStock(productId: string): Promise<number> {
+    // Si 'type' est 'IN', on ajoute la quantité (1 * quantity).
+    // Si 'type' est 'OUT', on soustrait la quantité (-1 * quantity).
+    const stockCalculation = sql<number>`
+      sum(
+        CASE
+          WHEN ${stockMovements.type} = 'IN' THEN ${stockMovements.quantity}
+          WHEN ${stockMovements.type} = 'OUT' THEN -1 * ${stockMovements.quantity}
+          ELSE 0
+        END
+      )
+    `.as('available_stock');
+
+    const result = await db
+      .select({
+        availableStock: stockCalculation,
+      })
+      .from(stockMovements)
+      .where(eq(stockMovements.productId, productId))
+      .execute();
+
+    // Si aucun mouvement n'existe, le stock est 0
+    if (result.length === 0 || result[0].availableStock === null) {
+      return 0;
+    }
+
+    return parseFloat(result[0].availableStock.toString());
   }
 }
