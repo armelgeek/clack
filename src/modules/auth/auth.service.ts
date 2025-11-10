@@ -163,6 +163,14 @@ export const auth = betterAuth({
         }
 
         const user = session.user;
+
+        // Check if the user's email ends with '@vapostore.com'
+        const isVapostoreUser = user.email.endsWith('@vapostore.com');
+
+        if (isVapostoreUser) {
+          return;
+        }
+
         if (detectedApp && !APP_CONFIG[detectedApp].roles.includes(user.role)) {
           await auth.api.signOut({ headers: ctx.request.headers }); // Invalidate session
           return new Response(
@@ -184,6 +192,13 @@ export const auth = betterAuth({
           return;
         }
         const user = session.user;
+
+        // Check if the user's email ends with '@vapostore.com'
+        const isVapostoreUser = user.email.endsWith('@vapostore.com');
+
+        if (isVapostoreUser) {
+          return;
+        }
 
         const allowedRoles: Record<string, UserRole[]> = {
           CUSTOMER_APP: [UserRole.CUSTOMER],
