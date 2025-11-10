@@ -46,10 +46,7 @@ export class UserService {
   }
 
   async createStoreUser(dto: CreateStoreUserDto) {
-    const existing = await this.userRepository.findByEmail(dto.email);
-    if (existing) {
-      throw new BadRequestException('Cet email existe déjà');
-    }
+
     await this.userRepository.signUpUser({
       email: dto.email,
       password: dto.password,
