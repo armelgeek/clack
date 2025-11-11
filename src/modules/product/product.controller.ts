@@ -310,4 +310,26 @@ export class ProductController {
   async getTotalProductCount() {
     return { count: await this.productService.getTotalProductCount() };
   }
+
+  @Get(':productId/stock')
+  @ApiOperation({ summary: 'Get product stock availability' })
+  @ApiResponse({
+    status: 200,
+    description: 'Stock information retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
+  async getProductStock(@Param('productId') productId: string) {
+    const product = await this.productService.getProductById(productId);
+    //TODO: check vapostore product
+    return {
+      productId: product.id,
+      storeId: product.storeId,
+      quantity: product.quantity,
+      inStock: Number(product.quantity) > 0,
+      status: product.status,
+    };
+  }
 }
