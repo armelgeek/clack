@@ -67,8 +67,11 @@ export class CartController {
     @Param('itemId') itemId: string,
     @Body() dto: UpdateCartItemDto,
   ) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
-    return this.cartService.updateItem(userId, itemId, dto);
+    const sessionResult = await auth.api.getSession({
+      headers: req.headers,
+    });
+      const user = sessionResult?.user;
+    return this.cartService.updateItem(user.id, itemId, dto);
   }
 
   @Delete('items/:itemId')
@@ -82,7 +85,10 @@ export class CartController {
     description: 'Cart item not found',
   })
   async removeItem(@Req() req: any, @Param('itemId') itemId: string) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
+    const sessionResult = await auth.api.getSession({
+      headers: req.headers,
+    });
+    const userId = sessionResult.user.id;
     return this.cartService.removeItem(userId, itemId);
   }
 
@@ -93,7 +99,10 @@ export class CartController {
     description: 'Cart cleared successfully',
   })
   async clearCart(@Req() req: any) {
-    const userId = req.user?.id;
+    const sessionResult = await auth.api.getSession({
+      headers: req.headers,
+    });
+    const userId = sessionResult.user.id;
     return this.cartService.clearCart(userId);
   }
 
