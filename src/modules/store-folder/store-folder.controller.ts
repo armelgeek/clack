@@ -29,4 +29,16 @@ export class StoreFolderController {
   async findAll() {
     return this.service.getAllFolders();
   }
+
+  @Post('delete')
+  @ApiOperation({ summary: 'Supprimer un dossier' })
+  @ApiBody({ schema: { properties: { folderID: { type: 'string' } } } })
+  @ApiResponse({
+    status: 200,
+    description: 'Le dossier a été supprimé avec succès.',
+  })
+  @ApiResponse({ status: 400, description: 'Données invalides.' })
+  async delete(@Body('folderID') folderID: string) {
+    return this.service.deleteFolder(folderID);
+  }
 }

@@ -29,4 +29,10 @@ export class StoreFolderRepository {
   async getAllFolders() {
     return db.select().from(storeFolders);
   }
+  async deleteFolder(folderID:string) {
+    return db
+      .delete(storeFolders)
+      .where(eq(storeFolders.id, folderID))
+      .returning();
+  }
 }
