@@ -12,4 +12,8 @@ export class StoreFolderService {
   getAllFolders() {
     return this.repository.getAllFolders();
   }
+
+  deleteFolder(folderID: string) {
+    return this.repository.deleteFolder(folderID);
+  }
 }
