@@ -225,30 +225,7 @@ export class ProductController {
   async updateProduct(
     @Param('productId') productId: string,
     @Body() dto: UpdateProductDto,
-  ): Promise<{
-    images: {
-      id: string;
-      productId: string;
-      storeId: string;
-      url: string;
-      filename: string;
-      objectKey: string;
-    }[];
-    description: string;
-    id: string;
-    name: string;
-    createdAt: Date;
-    updatedAt: Date;
-    status: string;
-    deletedAt: Date;
-    storeId: string;
-    category: string;
-    priceHT: number;
-    priceTTC: number;
-    vat: string;
-    quantity: number;
-    owner: string;
-  }> {
+  ): Promise<TProduct> {
     return this.productService.updateProduct(productId, dto);
   }
 
