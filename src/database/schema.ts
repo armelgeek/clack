@@ -56,7 +56,7 @@ export const categories = pgTable('categories', {
 export const products = pgTable(
   'products',
   {
-    id: text('id').notNull().unique(),
+  id: text('id').notNull(),
     storeId: text('store_id')
       .notNull()
       .references(() => stores.id),
