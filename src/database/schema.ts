@@ -357,6 +357,59 @@ export const shippingEstimates = pgTable('shipping_estimates', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+// Delivery drivers (mock for now)
+export const deliveryDrivers = pgTable('delivery_drivers', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  phone: text('phone').notNull(),
+  photo: text('photo'),
+  vehicleType: text('vehicle_type').notNull(), // bike, scooter, car
+  rating: numeric('rating').$type<number>(),
+  isAvailable: boolean('is_available').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Delivery tracking details
+export const deliveryTracking = pgTable('delivery_tracking', {
+  id: text('id').primaryKey(),
+  orderId: text('order_id')
+    .notNull()
+    .unique()
+    .references(() => orders.id, { onDelete: 'cascade' }),
+  driverId: text('driver_id').references(() => deliveryDrivers.id),
+  status: text('status').notNull().default('preparing'), // preparing, ready, picked_up, on_the_way, nearby, delivered, failed, returned
+  estimatedTimeMinutes: integer('estimated_time_minutes'),
+  currentLatitude: numeric('current_latitude').$type<number>(),
+  currentLongitude: numeric('current_longitude').$type<number>(),
+  currentAddress: text('current_address'),
+  currentLandmark: text('current_landmark'),
+  destinationLatitude: numeric('destination_latitude').$type<number>(),
+  destinationLongitude: numeric('destination_longitude').$type<number>(),
+  destinationAddress: text('destination_address'),
+  destinationLandmark: text('destination_landmark'),
+  shopLatitude: numeric('shop_latitude').$type<number>(),
+  shopLongitude: numeric('shop_longitude').$type<number>(),
+  shopAddress: text('shop_address'),
+  shopLandmark: text('shop_landmark'),
+  canCall: boolean('can_call').notNull().default(true),
+  canMessage: boolean('can_message').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Delivery messages
+export const deliveryMessages = pgTable('delivery_messages', {
+  id: text('id').primaryKey(),
+  deliveryTrackingId: text('delivery_tracking_id')
+    .notNull()
+    .references(() => deliveryTracking.id, { onDelete: 'cascade' }),
+  fromDriver: boolean('from_driver').notNull(),
+  message: text('message').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Relations
 export const storeUsersRelations = relations(storeUsers, ({ one }) => ({
   store: one(stores, {
@@ -511,6 +564,29 @@ export const shippingEstimatesRelations = relations(shippingEstimates, ({ one })
   }),
 }));
 
+export const deliveryTrackingRelations = relations(deliveryTracking, ({ one, many }) => ({
+  order: one(orders, {
+    fields: [deliveryTracking.orderId],
+    references: [orders.id],
+  }),
+  driver: one(deliveryDrivers, {
+    fields: [deliveryTracking.driverId],
+    references: [deliveryDrivers.id],
+  }),
+  messages: many(deliveryMessages),
+}));
+
+export const deliveryDriversRelations = relations(deliveryDrivers, ({ many }) => ({
+  deliveries: many(deliveryTracking),
+}));
+
+export const deliveryMessagesRelations = relations(deliveryMessages, ({ one }) => ({
+  deliveryTracking: one(deliveryTracking, {
+    fields: [deliveryMessages.deliveryTrackingId],
+    references: [deliveryTracking.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
@@ -549,3 +625,12 @@ export type NewOrderRating = typeof orderRatings.$inferInsert;
 
 export type ShippingEstimate = typeof shippingEstimates.$inferSelect;
 export type NewShippingEstimate = typeof shippingEstimates.$inferInsert;
+
+export type DeliveryDriver = typeof deliveryDrivers.$inferSelect;
+export type NewDeliveryDriver = typeof deliveryDrivers.$inferInsert;
+
+export type DeliveryTracking = typeof deliveryTracking.$inferSelect;
+export type NewDeliveryTracking = typeof deliveryTracking.$inferInsert;
+
+export type DeliveryMessage = typeof deliveryMessages.$inferSelect;
+export type NewDeliveryMessage = typeof deliveryMessages.$inferInsert;

@@ -24,6 +24,11 @@ import { SyncStoreModule } from './sync-store/sync-store.module';
 import { StockAlertModule } from './stock-alert/stock-alert.module';
 import { CartModule } from './cart/cart.module';
 import { SearchModule } from './search/search.module';
+import { OrdersModule } from './orders/orders.module';
+import { PaymentModule } from './payment/payment.module';
+import { UserAddressesModule } from './user-addresses/user-addresses.module';
+import { UserPaymentMethodsModule } from './user-payment-methods/user-payment-methods.module';
+import { DeliveryModule } from './delivery/delivery.module';
 
 @Module({
   imports: [
@@ -59,6 +64,11 @@ import { SearchModule } from './search/search.module';
     StockAlertModule,
     CartModule,
     SearchModule,
+    OrdersModule,
+    PaymentModule,
+    UserAddressesModule,
+    UserPaymentMethodsModule,
+    DeliveryModule,
   ],
 })
 export class AppModule {}
