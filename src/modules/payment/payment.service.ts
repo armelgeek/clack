@@ -148,21 +148,25 @@ export class PaymentService {
     return { received: true };
   }
 
-  async simulatePaymentError(type: 'declined' | 'timeout' | '3d_secure') {
+  async simulatePaymentError(type: 'declined' | 'insufficient_funds' | 'network_error' | 'authentication_required') {
     this.logger.log(`Simulating payment error: ${type}`);
 
     const errors = {
       declined: {
-        code: 'card_declined',
+        error: 'card_declined',
         message: 'Your card was declined',
       },
-      timeout: {
-        code: 'payment_timeout',
-        message: 'Payment request timed out',
+      insufficient_funds: {
+        error: 'insufficient_funds',
+        message: 'Insufficient funds in your account',
       },
-      '3d_secure': {
-        code: '3d_secure_required',
-        message: '3D Secure authentication required',
+      network_error: {
+        error: 'network_error',
+        message: 'Network error occurred during payment processing',
+      },
+      authentication_required: {
+        error: 'authentication_required',
+        message: 'Additional authentication is required',
         nextAction: {
           type: 'redirect_to_url',
           url: 'https://example.com/3ds-auth',

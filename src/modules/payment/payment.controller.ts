@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { CreatePaymentIntentDto } from './dtos/payment-intent.dto';
 import { ConfirmPaymentDto } from './dtos/confirm-payment.dto';
+import { SimulatePaymentErrorDto } from './dtos/simulate-error.dto';
 import { auth } from '../auth/auth.service';
 
 @ApiTags('payment')
@@ -61,7 +62,7 @@ export class PaymentController {
     status: 200,
     description: 'Error simulated',
   })
-  async simulateError(@Body() body: { type: 'declined' | 'timeout' | '3d_secure' }) {
-    return this.paymentService.simulatePaymentError(body.type);
+  async simulateError(@Body() dto: SimulatePaymentErrorDto) {
+    return this.paymentService.simulatePaymentError(dto.type);
   }
 }
