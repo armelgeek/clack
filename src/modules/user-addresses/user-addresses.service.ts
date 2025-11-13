@@ -14,14 +14,28 @@ export class UserAddressesService {
 
   constructor(private readonly addressesRepository: UserAddressesRepository) {}
 
+  private formatAddress(addr: any) {
+    return {
+      ...addr,
+      latitude: addr.latitude ? parseFloat(addr.latitude) : undefined,
+      longitude: addr.longitude ? parseFloat(addr.longitude) : undefined,
+      createdAt: addr.createdAt.toISOString(),
+      updatedAt: addr.updatedAt.toISOString(),
+    };
+  }
+
   async getAddresses(userId: string) {
     const addresses = await this.addressesRepository.findByUserId(userId);
-    return addresses;
+    
+    // Convert latitude/longitude from string to number
+    const formattedAddresses = addresses.map(addr => this.formatAddress(addr));
+    
+    return { addresses: formattedAddresses };
   }
 
   async createAddress(userId: string, dto: CreateAddressDto) {
     const address = await this.addressesRepository.create(userId, dto);
-    return address;
+    return this.formatAddress(address);
   }
 
   async updateAddress(userId: string, addressId: string, dto: UpdateAddressDto) {
@@ -32,7 +46,7 @@ export class UserAddressesService {
     }
 
     const updatedAddress = await this.addressesRepository.update(addressId, dto);
-    return updatedAddress;
+    return this.formatAddress(updatedAddress);
   }
 
   async deleteAddress(userId: string, addressId: string) {
@@ -54,6 +68,6 @@ export class UserAddressesService {
     }
 
     const updatedAddress = await this.addressesRepository.setDefault(userId, addressId);
-    return updatedAddress;
+    return this.formatAddress(updatedAddress);
   }
 }

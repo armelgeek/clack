@@ -11,6 +11,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserPaymentMethodsService } from './user-payment-methods.service';
 import { CreatePaymentMethodDto } from './dtos/create-payment-method.dto';
+import { GetPaymentMethodsResponseDto, PaymentMethodResponseDto } from './dtos/payment-method-response.dto';
 import { auth } from '../auth/auth.service';
 
 @ApiTags('user-payment-methods')
@@ -23,6 +24,7 @@ export class UserPaymentMethodsController {
   @ApiResponse({
     status: 200,
     description: 'Payment methods retrieved successfully',
+    type: GetPaymentMethodsResponseDto,
   })
   async getPaymentMethods(@Req() req: any) {
     const sessionResult = await auth.api.getSession({
@@ -37,6 +39,7 @@ export class UserPaymentMethodsController {
   @ApiResponse({
     status: 201,
     description: 'Payment method created successfully',
+    type: PaymentMethodResponseDto,
   })
   async createPaymentMethod(@Req() req: any, @Body() dto: CreatePaymentMethodDto) {
     const sessionResult = await auth.api.getSession({
@@ -69,6 +72,7 @@ export class UserPaymentMethodsController {
   @ApiResponse({
     status: 200,
     description: 'Default payment method set successfully',
+    type: PaymentMethodResponseDto,
   })
   @ApiResponse({
     status: 404,

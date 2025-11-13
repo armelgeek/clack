@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateAddressDto {
   @ApiPropertyOptional({ description: 'Address label' })
@@ -41,4 +41,9 @@ export class UpdateAddressDto {
   @IsOptional()
   @IsNumber()
   longitude?: number;
+
+  @ApiPropertyOptional({ description: 'Set as default address' })
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
 }
