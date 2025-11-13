@@ -12,14 +12,22 @@ export class UserPaymentMethodsService {
 
   constructor(private readonly paymentMethodsRepository: UserPaymentMethodsRepository) {}
 
+  private formatPaymentMethod(pm: any) {
+    return {
+      ...pm,
+      token: pm.token ? '***' : undefined, // Mask the token
+      createdAt: pm.createdAt.toISOString(),
+      updatedAt: pm.updatedAt.toISOString(),
+    };
+  }
+
   async getPaymentMethods(userId: string) {
     const paymentMethods = await this.paymentMethodsRepository.findByUserId(userId);
     
-    // Don't expose full token in response
-    return paymentMethods.map(pm => ({
-      ...pm,
-      token: '***', // Mask the token
-    }));
+    // Don't expose full token in response and ensure proper formatting
+    const formattedPaymentMethods = paymentMethods.map(pm => this.formatPaymentMethod(pm));
+    
+    return { paymentMethods: formattedPaymentMethods };
   }
 
   async createPaymentMethod(userId: string, dto: CreatePaymentMethodDto) {
@@ -27,10 +35,7 @@ export class UserPaymentMethodsService {
     const paymentMethod = await this.paymentMethodsRepository.create(userId, dto);
     
     // Don't expose full token in response
-    return {
-      ...paymentMethod,
-      token: '***',
-    };
+    return this.formatPaymentMethod(paymentMethod);
   }
 
   async deletePaymentMethod(userId: string, paymentMethodId: string) {
@@ -54,9 +59,6 @@ export class UserPaymentMethodsService {
     const updatedPaymentMethod = await this.paymentMethodsRepository.setDefault(userId, paymentMethodId);
     
     // Don't expose full token in response
-    return {
-      ...updatedPaymentMethod,
-      token: '***',
-    };
+    return this.formatPaymentMethod(updatedPaymentMethod);
   }
 }

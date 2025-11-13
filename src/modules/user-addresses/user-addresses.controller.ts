@@ -12,6 +12,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserAddressesService } from './user-addresses.service';
 import { CreateAddressDto } from './dtos/create-address.dto';
 import { UpdateAddressDto } from './dtos/update-address.dto';
+import { GetAddressesResponseDto, AddressResponseDto } from './dtos/address-response.dto';
 import { auth } from '../auth/auth.service';
 
 @ApiTags('user-addresses')
@@ -24,6 +25,7 @@ export class UserAddressesController {
   @ApiResponse({
     status: 200,
     description: 'Addresses retrieved successfully',
+    type: GetAddressesResponseDto,
   })
   async getAddresses(@Req() req: any) {
     const sessionResult = await auth.api.getSession({
@@ -38,6 +40,7 @@ export class UserAddressesController {
   @ApiResponse({
     status: 201,
     description: 'Address created successfully',
+    type: AddressResponseDto,
   })
   async createAddress(@Req() req: any, @Body() dto: CreateAddressDto) {
     const sessionResult = await auth.api.getSession({
@@ -52,6 +55,7 @@ export class UserAddressesController {
   @ApiResponse({
     status: 200,
     description: 'Address updated successfully',
+    type: AddressResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -92,6 +96,7 @@ export class UserAddressesController {
   @ApiResponse({
     status: 200,
     description: 'Default address set successfully',
+    type: AddressResponseDto,
   })
   @ApiResponse({
     status: 404,
