@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreatePaymentMethodDto {
   @ApiProperty({ description: 'Payment method type (card, paypal)' })
@@ -38,4 +38,9 @@ export class CreatePaymentMethodDto {
   @IsOptional()
   @IsInt()
   expiryYear?: number;
+
+  @ApiPropertyOptional({ description: 'Set as default payment method', default: false })
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
 }

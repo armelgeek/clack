@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateAddressDto {
   @ApiProperty({ description: 'Address label (home, work, other)' })
@@ -41,4 +41,9 @@ export class CreateAddressDto {
   @IsOptional()
   @IsNumber()
   longitude?: number;
+
+  @ApiPropertyOptional({ description: 'Set as default address', default: false })
+  @IsOptional()
+  @IsBoolean()
+  isDefault?: boolean;
 }
