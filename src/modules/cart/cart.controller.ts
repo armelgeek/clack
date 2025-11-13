@@ -19,7 +19,7 @@ import { auth } from '../auth/auth.service';
 @ApiTags('cart')
 @Controller('cart')
 export class CartController {
-  constructor(private readonly cartService: CartService) {}
+  constructor(private readonly cartService: CartService) { }
 
   @Get()
   @ApiOperation({ summary: 'Get user cart' })
@@ -28,9 +28,11 @@ export class CartController {
     description: 'Cart retrieved successfully',
   })
   async getCart(@Req() req: any) {
-    // TODO: Add authentication guard - currently using guest fallback for development
-    const userId = req.user?.id || 'guest';
-    return this.cartService.getCart(userId);
+    const sessionResult = await auth.api.getSession({
+      headers: req.headers
+    });
+    const user = sessionResult?.user;
+    return this.cartService.getCart(user.id);
   }
 
   @Post('items')
@@ -48,8 +50,11 @@ export class CartController {
     description: 'Product not found',
   })
   async addItem(@Req() req: any, @Body() dto: AddCartItemDto) {
-    const userId = req.user?.id || 'guest'; // TODO: Get from auth
-    return this.cartService.addItem(userId, dto);
+    const sessionResult = await auth.api.getSession({
+      headers: req.headers,
+    });
+    const user = sessionResult?.user;
+    return this.cartService.addItem(user.id, dto);
   }
 
   @Put('items/:itemId')
@@ -70,7 +75,7 @@ export class CartController {
     const sessionResult = await auth.api.getSession({
       headers: req.headers,
     });
-      const user = sessionResult?.user;
+    const user = sessionResult?.user;
     return this.cartService.updateItem(user.id, itemId, dto);
   }
 
@@ -161,7 +166,7 @@ export class CartController {
   })
   async validateStock(@Req() req: any) {
     const sessionResult = await auth.api.getSession({ headers: req.headers });
-    const userId = sessionResult.user.id; 
+    const userId = sessionResult.user.id;
     return this.cartService.validateCartStock(userId);
   }
 }
